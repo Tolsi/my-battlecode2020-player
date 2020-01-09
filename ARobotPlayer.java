@@ -1,7 +1,7 @@
 package mybot;
 import battlecode.common.*;
 
-public strictfp class RobotPlayer {
+public strictfp class ARobotPlayer {
     static RobotController rc;
 
     static int turnCount;
@@ -14,7 +14,7 @@ public strictfp class RobotPlayer {
 
         // This is the RobotController object. You use it to perform actions from this robot,
         // and to get information on its current status.
-        RobotPlayer.rc = rc;
+        ARobotPlayer.rc = rc;
 
         turnCount = 0;
 
@@ -27,15 +27,15 @@ public strictfp class RobotPlayer {
                 // You can add the missing ones or rewrite this into your own control structure.
                 System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
                 switch (rc.getType()) {
-                    case HQ:                 HQLogic.run();                break;
-                    case MINER:              MinerLogic.run();             break;
-                    case REFINERY:           RefineryLogic.run();          break;
-                    case VAPORATOR:          VaporatorLogic.run();         break;
-                    case DESIGN_SCHOOL:      DesignSchoolLogic.run();      break;
-                    case FULFILLMENT_CENTER: FulfillmentCenterLogic.run(); break;
-                    case LANDSCAPER:         LandscaperLogic.run();        break;
-                    case DELIVERY_DRONE:     DeliveryDroneLogic.run();     break;
-                    case NET_GUN:            NetGunLogic.run();            break;
+                    case HQ:                 LHQ.run();                break;
+                    case MINER:              LMiner.run();             break;
+                    case REFINERY:           LRefinery.run();          break;
+                    case VAPORATOR:          LVaporator.run();         break;
+                    case DESIGN_SCHOOL:      LDesignSchool.run();      break;
+                    case FULFILLMENT_CENTER: LFulfillmentCenter.run(); break;
+                    case LANDSCAPER:         LLandscaper.run();        break;
+                    case DELIVERY_DRONE:     LDeliveryDrone.run();     break;
+                    case NET_GUN:            LNetGun.run();            break;
                 }
 
                 // Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
@@ -48,7 +48,7 @@ public strictfp class RobotPlayer {
     }
 
     static boolean tryMove() throws GameActionException {
-        for (Direction dir : DirectionsUtil.directions)
+        for (Direction dir : UDirections.directions)
             if (tryMove(dir))
                 return true;
         return false;
@@ -123,7 +123,7 @@ public strictfp class RobotPlayer {
 
 
     static void tryBlockchain() throws GameActionException {
-        if (RobotPlayer.turnCount < 3) {
+        if (ARobotPlayer.turnCount < 3) {
             int[] message = new int[7];
             for (int i = 0; i < 7; i++) {
                 message[i] = 123;

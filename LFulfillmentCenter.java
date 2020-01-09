@@ -4,9 +4,9 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotType;
 
-public strictfp class HQLogic {
+public strictfp class LFulfillmentCenter {
     static void run() throws GameActionException {
-        for (Direction dir : DirectionsUtil.directions)
-            RobotPlayer.tryBuild(RobotType.MINER, dir);
+        for (Direction dir : UDirections.directions)
+            ARobotPlayer.tryBuild(RobotType.DELIVERY_DRONE, dir);
     }
 }

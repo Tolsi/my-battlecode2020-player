@@ -2,7 +2,7 @@ package mybot;
 
 import battlecode.common.GameActionException;
 
-public strictfp class LandscaperLogic {
+public strictfp class LVaporator {
     static void run() throws GameActionException {
     }
 }

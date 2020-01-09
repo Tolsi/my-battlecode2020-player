@@ -2,7 +2,7 @@ package mybot;
 
 import battlecode.common.Direction;
 
-public class DirectionsUtil {
+public class UDirections {
     static Direction[] directions = {
         Direction.NORTH,
         Direction.NORTHEAST,
