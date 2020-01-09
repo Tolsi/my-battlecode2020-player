@@ -7,6 +7,6 @@ import battlecode.common.RobotType;
 public strictfp class LHQ {
     static void run() throws GameActionException {
         for (Direction dir : UDirections.directions)
-            MM.tryBuild(RobotType.MINER, dir);
+            GS.tryBuild(RobotType.MINER, dir);
     }
 }

@@ -19,27 +19,27 @@ public strictfp class LMiner {
     static void run() throws GameActionException {
         if (hqLoc == null) {
             // search surroundings for HQ
-            RobotInfo[] robots = MM.c.senseNearbyRobots();
+            RobotInfo[] robots = GS.c.senseNearbyRobots();
             for (RobotInfo robot : robots) {
-                if (robot.type == RobotType.HQ && robot.team == MM.c.getTeam()) {
+                if (robot.type == RobotType.HQ && robot.team == GS.c.getTeam()) {
                     hqLoc = robot.location;
                 }
             }
         }
 
-        MM.tryBlockchain();
+        GS.tryBlockchain();
         for (Direction dir : UDirections.directions)
-            if (MM.tryRefine(dir))
-                System.out.println("I refined soup! " + MM.c.getTeamSoup());
+            if (GS.tryRefine(dir))
+                System.out.println("I refined soup! " + GS.c.getTeamSoup());
         for (Direction dir : UDirections.directions)
-            if (MM.tryMine(dir))
-                System.out.println("I mined soup! " + MM.c.getSoupCarrying());
-        if (MM.c.getSoupCarrying() == RobotType.MINER.soupLimit) {
+            if (GS.tryMine(dir))
+                System.out.println("I mined soup! " + GS.c.getSoupCarrying());
+        if (GS.c.getSoupCarrying() == RobotType.MINER.soupLimit) {
             // time to go back to the HQ
-            Direction dirToHQ = MM.c.getLocation().directionTo(hqLoc);
-            if(MM.tryMove(dirToHQ))
+            Direction dirToHQ = GS.c.getLocation().directionTo(hqLoc);
+            if(GS.tryMove(dirToHQ))
                 System.out.println("moved towards HQ");
-        } else if (MM.tryMove(UDirections.randomDirection())) {
+        } else if (GS.tryMove(UDirections.randomDirection())) {
             // otherwise, move randomly as usual
             System.out.println("I moved randomly!");
         }

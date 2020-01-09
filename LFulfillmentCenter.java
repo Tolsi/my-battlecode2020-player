@@ -7,6 +7,6 @@ import battlecode.common.RobotType;
 public strictfp class LFulfillmentCenter {
     static void run() throws GameActionException {
         for (Direction dir : UDirections.directions)
-            MM.tryBuild(RobotType.DELIVERY_DRONE, dir);
+            GS.tryBuild(RobotType.DELIVERY_DRONE, dir);
     }
 }

@@ -12,12 +12,12 @@ public strictfp class RobotPlayer {
 
         // This is the RobotController object. You use it to perform actions from this robot,
         // and to get information on its current status.
-        MM.c = rc;
-        MM.turnCount = 0;
+        GS.c = rc;
+        GS.turnCount = 0;
 
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
         while (true) {
-            MM.turnCount += 1;
+            GS.turnCount += 1;
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
                 // Here, we've separated the controls into a different method for each RobotType.

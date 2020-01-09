@@ -5,7 +5,7 @@ import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 
-public strictfp class MM {
+public strictfp class GS {
     static RobotController c;
     static int turnCount;
 
