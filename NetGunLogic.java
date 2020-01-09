@@ -1,4 +1,4 @@
-package lectureplayer;
+package mybot;
 
 import battlecode.common.GameActionException;
 
