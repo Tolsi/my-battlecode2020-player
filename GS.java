@@ -84,7 +84,7 @@ public strictfp class GS {
     }
 
     static void sendToBlockchain(MMessage m) throws GameActionException {
-        int[] msg = UBlockchain.msgToTXData(m);
+        int[] msg = UBlockchain.messageToTXData(m);
         if (c.canSubmitTransaction(msg, 10))
             c.submitTransaction(msg, 10);
     }

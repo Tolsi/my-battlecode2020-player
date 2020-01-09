@@ -21,7 +21,7 @@ public class UBlockchain {
 
     static void writeMessage(MMessage message, byte[] bytes) {
         if (message instanceof MMapUpdates) {
-            MMapUpdates.write((MMapUpdates) message, bytes, 2);
+            MMapUpdates.write((MMapUpdates) message, bytes, 0);
         }
     }
 
@@ -36,17 +36,20 @@ public class UBlockchain {
         }
     }
 
-    static int[] msgToTXData(MMessage m) {
+    static int[] messageToTXData(MMessage m) {
         byte[] bytes = new byte[28];
+        // keep it for CRC
+        bytes[27] = 0;
         writeMessage(m, bytes);
         addCRC(bytes);
         return MUtil.bytesToIntArray(bytes);
     }
 
 
-    static MMessage msgFromTXData(int[] data) {
+    static MMessage messageFromTXData(int[] data) {
         byte[] bytes = MUtil.intArrayToBytes(data);
         if (checkCRC(bytes)) {
+            bytes[27] = 0;
             return readMessage(bytes);
         }
         return null;

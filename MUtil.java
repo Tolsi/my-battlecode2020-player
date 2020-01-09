@@ -4,13 +4,11 @@ public class MUtil {
     //region Ints to Bytes and back
     static int[] bytesToIntArray(byte[] array) {
         assert array.length == 28;
-        // keep it for CRC
-        array[27] = 0;
 
         int[] result = new int[7];
 
-        for (int i = 0; i < array.length; i += 4) {
-            result[i] = array[i + 3] & 0xFF |
+        for (int i = 0, j = 0; i < array.length; i += 4, j++) {
+            result[j] = array[i + 3] & 0xFF |
                     (array[i + 2] & 0xFF) << 8 |
                     (array[i + 1] & 0xFF) << 16 |
                     (array[i] & 0xFF) << 24;
@@ -25,12 +23,12 @@ public class MUtil {
 
         byte[] result = new byte[28];
 
-        for (int i = 0; i < array.length; i++) {
+        for (int i = 0, j = 0; i < array.length; i++, j += 4) {
             int in = array[i];
-            result[i + 3] = (byte) (in & 0xFF);
-            result[i + 2] = (byte) ((in >> 8) & 0xFF);
-            result[i + 1] = (byte) ((in >> 16) & 0xFF);
-            result[i] = (byte) ((in >> 24) & 0xFF);
+            result[j + 3] = (byte) (in & 0xFF);
+            result[j + 2] = (byte) ((in >> 8) & 0xFF);
+            result[j + 1] = (byte) ((in >> 16) & 0xFF);
+            result[j] = (byte) ((in >> 24) & 0xFF);
         }
 
         return result;
