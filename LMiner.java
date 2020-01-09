@@ -27,7 +27,7 @@ public strictfp class LMiner {
             }
         }
 
-        GS.tryBlockchain();
+//        GS.tryBlockchain();
         for (Direction dir : UDirections.directions)
             if (GS.tryRefine(dir))
                 System.out.println("I refined soup! " + GS.c.getTeamSoup());

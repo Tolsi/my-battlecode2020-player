@@ -83,15 +83,9 @@ public strictfp class GS {
         } else return false;
     }
 
-    static void tryBlockchain() throws GameActionException {
-        if (turnCount < 3) {
-            int[] message = new int[7];
-            for (int i = 0; i < 7; i++) {
-                message[i] = 123;
-            }
-            if (c.canSubmitTransaction(message, 10))
-                c.submitTransaction(message, 10);
-        }
-        // System.out.println(rc.getRoundMessages(turnCount-1));
+    static void sendToBlockchain(MMessage m) throws GameActionException {
+        int[] msg = UBlockchain.msgToTXData(m);
+        if (c.canSubmitTransaction(msg, 10))
+            c.submitTransaction(msg, 10);
     }
 }
