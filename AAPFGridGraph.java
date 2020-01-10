@@ -11,10 +11,6 @@ public class AAPFGridGraph {
     public final int sizeX;
     public final int sizeY;
     public final int sizeXplusOne;
-
-    private static final float SQRT_TWO = (float)Math.sqrt(2);
-    private static final double SQRT_TWO_DOUBLE = Math.sqrt(2);
-    private static final float SQRT_TWO_MINUS_ONE = (float)(Math.sqrt(2) - 1);
     
     public AAPFGridGraph(int sizeX, int sizeY) {
         this.sizeX = sizeX;
@@ -95,63 +91,23 @@ public class AAPFGridGraph {
      * @param y2 Condition: y2 between 0 and sizeY inclusive.
      * @return distance.
      */
-    public float distance(int x1, int y1, int x2, int y2) {
+    public int distance(int x1, int y1, int x2, int y2) {
         int xDiff = x2 - x1;
         int yDiff = y2 - y1;
         
         if (xDiff == 0) {
-            return (float)Math.abs(yDiff);
+            return (int)Math.abs(yDiff);
         }
         if (yDiff == 0) {
-            return (float)Math.abs(xDiff);
+            return (int)Math.abs(xDiff);
         }
         if (xDiff == yDiff || xDiff == -yDiff) {
-            return SQRT_TWO*Math.abs(xDiff);
+            return 2*Math.abs(xDiff);
         }
         
         int squareDistance = xDiff*xDiff + yDiff*yDiff;
         
-        return (float)Math.sqrt(squareDistance);
-    }
-    
-    public double distance_double(int x1, int y1, int x2, int y2) {
-        int xDiff = x2 - x1;
-        int yDiff = y2 - y1;
-        
-        if (xDiff == 0) {
-            return Math.abs(yDiff);
-        }
-        if (yDiff == 0) {
-            return Math.abs(xDiff);
-        }
-        if (xDiff == yDiff || xDiff == -yDiff) {
-            return SQRT_TWO_DOUBLE*Math.abs(xDiff);
-        }
-        
-        int squareDistance = xDiff*xDiff + yDiff*yDiff;
-        
-        return Math.sqrt(squareDistance);
-    }
-    
-    /**
-     * Octile distance:
-     *   min(dx,dy)*sqrt(2) + (max(dx,dy)-min(dx,dy))
-     * = min(dx,dy)*(sqrt(2)-1) + max(dx,dy)
-     */
-    public float octileDistance(int x1, int y1, int x2, int y2) {
-        int dx = x1-x2;
-        int dy = y1-y2;
-        if (dx<0) dx = -dx;
-        if (dy<0) dy = -dy;
-        
-        int min = dx;
-        int max = dy;
-        if (dy < dx) {
-            min = dy;
-            max = dx;
-        }
-        
-        return min*SQRT_TWO_MINUS_ONE + max;
+        return (int)Math.sqrt(squareDistance);
     }
 
     /**

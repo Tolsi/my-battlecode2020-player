@@ -5,21 +5,21 @@ package mybot;
  */
 public class AAPFReusableIndirectHeap {
 
-    private static float[] keyList;
+    private static int[] keyList;
     private static int[] inList;
     private static int[] outList;
     private int heapSize;
     
-    private static float defaultKey = Float.POSITIVE_INFINITY;
+    private static int defaultKey = Integer.MAX_VALUE;
 
     public static int[] ticketCheck;
     public static int ticketNumber = 0;
 
-    public static void initialise(int size, float defaultKey) {
+    public static void initialise(int size, int defaultKey) {
         AAPFReusableIndirectHeap.defaultKey = defaultKey;
         
         if (ticketCheck == null || ticketCheck.length != size) {
-            keyList = new float[size];
+            keyList = new int[size];
             inList = new int[size];
             outList = new int[size];
             ticketCheck = new int[size];
@@ -32,7 +32,7 @@ public class AAPFReusableIndirectHeap {
         }
     }
     
-    public static float getKey(int index) {
+    public static int getKey(int index) {
         if (ticketCheck[index] != ticketNumber) return defaultKey;
         return keyList[index];
     }
@@ -47,7 +47,7 @@ public class AAPFReusableIndirectHeap {
         return outList[index];
     }
     
-    public static void setKey(int index, float value) {
+    public static void setKey(int index, int value) {
         if (ticketCheck[index] != ticketNumber) {
             keyList[index] = value;
             inList[index] = index;
@@ -85,7 +85,7 @@ public class AAPFReusableIndirectHeap {
      * Runtime: O(1)
      */
     public AAPFReusableIndirectHeap(int size) {
-        initialise(size, Float.POSITIVE_INFINITY);
+        initialise(size, Integer.MAX_VALUE);
         heapSize = size;
     }
 
@@ -130,7 +130,7 @@ public class AAPFReusableIndirectHeap {
      * swap integers in list
      */
     private void swapKey(int i1, int i2) {
-        float temp = getKey(i1);
+        int temp = getKey(i1);
         setKey(i1,getKey(i2));
         setKey(i2,temp);
     }
@@ -183,7 +183,7 @@ public class AAPFReusableIndirectHeap {
     /**
      * Runtime: O(lgn)
      */
-    public void decreaseKey(int outIndex, float newKey) {
+    public void decreaseKey(int outIndex, int newKey) {
         // Assume newKey < old key
         //System.out.println(keyList);
         //System.out.println(inList);
@@ -193,7 +193,7 @@ public class AAPFReusableIndirectHeap {
         bubbleUp(inIndex);
     }
     
-    public float getMinValue() {
+    public int getMinValue() {
         return getKey(0);
     }
 

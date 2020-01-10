@@ -36,7 +36,7 @@ public abstract class AAPFPathFindingAlgorithm {
         this.ey = ey;
     }
     
-    protected void initialiseMemory(int size, float defaultDistance, int defaultParent, boolean defaultVisited) {
+    protected void initialiseMemory(int size, int defaultDistance, int defaultParent, boolean defaultVisited) {
         usingStaticMemory = true;
         ticketNumber = AAPFMemory.initialise(size, defaultDistance, defaultParent, defaultVisited);
     }

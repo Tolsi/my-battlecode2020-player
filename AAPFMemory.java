@@ -1,11 +1,11 @@
 package mybot;
 
 public class AAPFMemory {
-    private static float[] distance;
+    private static int[] distance;
     private static int[] parent;
     private static boolean[] visited;
 
-    private static float defaultDistance = 0;
+    private static int defaultDistance = 0;
     private static int defaultParent = -1;
     private static boolean defaultVisited = false;
     
@@ -14,14 +14,14 @@ public class AAPFMemory {
     
     private static int size = 0;
     
-    public static int initialise(int size, float defaultDistance, int defaultParent, boolean defaultVisited) {
+    public static int initialise(int size, int defaultDistance, int defaultParent, boolean defaultVisited) {
         AAPFMemory.defaultDistance = defaultDistance;
         AAPFMemory.defaultParent = defaultParent;
         AAPFMemory.defaultVisited= defaultVisited;
         AAPFMemory.size = size;
         
         if (ticketCheck == null || ticketCheck.length != size) {
-            distance = new float[size];
+            distance = new int[size];
             parent = new int[size];
             visited = new boolean[size];
             ticketCheck = new int[size];
@@ -44,7 +44,7 @@ public class AAPFMemory {
         return size;
     }
     
-    public static float distance(int index) {
+    public static int distance(int index) {
         if (ticketCheck[index] != ticketNumber) return defaultDistance;
         return distance[index];
     }
@@ -59,7 +59,7 @@ public class AAPFMemory {
         return visited[index];
     }
     
-    public static void setDistance(int index, float value) {
+    public static void setDistance(int index, int value) {
         if (ticketCheck[index] != ticketNumber) {
             distance[index] = value;
             parent[index] = defaultParent;

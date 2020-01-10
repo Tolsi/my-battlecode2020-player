@@ -18,19 +18,19 @@ public class AAPFAStarStaticMemory extends AAPFPathFindingAlgorithm {
         finish = toOneDimIndex(ex, ey);
 
         pq = new AAPFReusableIndirectHeap(totalSize);
-        this.initialiseMemory(totalSize, Float.POSITIVE_INFINITY, -1, false);
+        this.initialiseMemory(totalSize, Integer.MAX_VALUE, -1, false);
 
         initialise(start);
 
-        float lastDist = -1;
+        int lastDist = -1;
         while (!pq.isEmpty()) {
-            float dist = pq.getMinValue();
+            int dist = pq.getMinValue();
 
             int current = pq.popMinIndex();
 
             if (Math.abs(dist - lastDist) > 0.01f) { lastDist = dist;}
 
-            if (current == finish || distance(current) == Float.POSITIVE_INFINITY) {
+            if (current == finish || distance(current) == Integer.MAX_VALUE) {
                 //maybeSaveSearchSnapshot();
                 break;
             }
@@ -70,20 +70,21 @@ public class AAPFAStarStaticMemory extends AAPFPathFindingAlgorithm {
         }
     }
 
-    protected float heuristic(int x, int y) {
+    protected int heuristic(int x, int y) {
         //return 0;
         return graph.distance(x, y, ex, ey);
     }
 
 
-    protected float weight(int x1, int y1, int x2, int y2) {
+    protected int weight(int x1, int y1, int x2, int y2) {
+        // todo pass function??
         return graph.distance(x1, y1, x2, y2);
     }
 
-    protected boolean relax(int u, int v, float weightUV) {
+    protected boolean relax(int u, int v, int weightUV) {
         // return true iff relaxation is done.
 
-        float newWeight = distance(u) + weightUV;
+        int newWeight = distance(u) + weightUV;
         if (newWeight < distance(v)) {
             setDistance(v, newWeight);
             setParent(v, u);
@@ -95,8 +96,8 @@ public class AAPFAStarStaticMemory extends AAPFPathFindingAlgorithm {
 
 
     protected final void initialise(int s) {
-        pq.decreaseKey(s, 0f);
-        AAPFMemory.setDistance(s, 0f);
+        pq.decreaseKey(s, 0);
+        AAPFMemory.setDistance(s, 0);
     }
 
 
@@ -108,28 +109,6 @@ public class AAPFAStarStaticMemory extends AAPFPathFindingAlgorithm {
             length++;
         }
         return length;
-    }
-
-    protected boolean lineOfSight(int node1, int node2) {
-        int x1 = toTwoDimX(node1);
-        int y1 = toTwoDimY(node1);
-        int x2 = toTwoDimX(node2);
-        int y2 = toTwoDimY(node2);
-        return graph.lineOfSight(x1, y1, x2, y2);
-    }
-
-    protected float physicalDistance(int node1, int node2) {
-        int x1 = toTwoDimX(node1);
-        int y1 = toTwoDimY(node1);
-        int x2 = toTwoDimX(node2);
-        int y2 = toTwoDimY(node2);
-        return graph.distance(x1, y1, x2, y2);
-    }
-
-    protected float physicalDistance(int x1, int y1, int node2) {
-        int x2 = toTwoDimX(node2);
-        int y2 = toTwoDimY(node2);
-        return graph.distance(x1, y1, x2, y2);
     }
 
     public int[][] getPath() {
@@ -167,11 +146,11 @@ public class AAPFAStarStaticMemory extends AAPFPathFindingAlgorithm {
         AAPFMemory.setParent(index, value);
     }
     
-    protected float distance(int index) {
+    protected int distance(int index) {
         return AAPFMemory.distance(index);
     }
     
-    protected void setDistance(int index, float value) {
+    protected void setDistance(int index, int value) {
         AAPFMemory.setDistance(index, value);
     }
     
