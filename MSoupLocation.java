@@ -2,24 +2,26 @@ package mybot;
 
 import battlecode.common.MapLocation;
 
-public class MSoupLocation extends MMessage {
+public class MSoupLocation {
     MapLocation location;
+    byte value;
 
-    public MSoupLocation(MapLocation location) {
+    public MSoupLocation(MapLocation location, byte value) {
         this.location = location;
+        this.value = value;
     }
-
-    static byte header = 0;
 
     static MSoupLocation read(byte[] bytes, int from) {
         // 0 byte is header
-        return new MSoupLocation(new MapLocation(bytes[from+1], bytes[from+2]));
+        return new MSoupLocation(new MapLocation(bytes[from++], bytes[from++]), bytes[from]);
     }
 
+    static int size = 3;
+
     static void write(MSoupLocation l, byte[] bytes, int from) {
-        bytes[from] = header;
-        bytes[from+1] = (byte) l.location.x;
-        bytes[from+2] = (byte) l.location.y;
+        bytes[from++] = (byte) l.location.x;
+        bytes[from++] = (byte) l.location.y;
+        bytes[from] = l.value;
     }
 
 }

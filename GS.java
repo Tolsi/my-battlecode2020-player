@@ -7,10 +7,11 @@ import battlecode.common.RobotType;
 
 public strictfp class GS {
     static RobotController c;
-    static int turnCount;
+    static int lifespan;
+    static SMap map;
 
     static boolean tryMove() throws GameActionException {
-        for (Direction dir : UDirections.directions)
+        for (Direction dir : UDirections.all)
             if (tryMove(dir))
                 return true;
         return false;

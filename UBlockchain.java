@@ -20,13 +20,17 @@ public class UBlockchain {
     //endregion
 
     static void writeMessage(MMessage message, byte[] bytes) {
-        if (message instanceof MMapUpdates) {
+        if (message instanceof MSoupLocations) {
+            MSoupLocations.write((MSoupLocations) message, bytes, 0);
+        } else if (message instanceof MMapUpdates) {
             MMapUpdates.write((MMapUpdates) message, bytes, 0);
         }
     }
 
     static MMessage readMessage(byte[] bytes) {
         switch (bytes[0]) {
+            case 0:
+                return MSoupLocations.read(bytes, 0);
             case 1:
                 return MMapUpdates.read(bytes, 0);
 //            case 1:
@@ -47,11 +51,48 @@ public class UBlockchain {
 
 
     static MMessage messageFromTXData(int[] data) {
+        if (data.length != 7) {
+            return null;
+        }
         byte[] bytes = MUtil.intArrayToBytes(data);
         if (checkCRC(bytes)) {
             bytes[27] = 0;
             return readMessage(bytes);
         }
         return null;
+    }
+
+    static byte UNSIGNED_BYTE_MIN_VALUE = Byte.MIN_VALUE;
+    static int UNSIGNED_BYTE_MAX_VALUE = 256;
+
+    static byte saveSoupAsByte(int value) {
+        // note: implicit rounding by 10! to put more values in a byte
+        // 128 - see intAsUnsignedByte
+        int newValue = (value / 10) - 128;
+        if (newValue > Byte.MAX_VALUE) {
+            newValue = Byte.MAX_VALUE;
+        }
+        return (byte) newValue;
+    }
+
+    static int readSoupFromByte(byte value) {
+        if (value == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) {
+            return 0;
+        }
+        return (value + 128) * 10;
+    }
+
+    static int bestFee(byte value) {
+        if (value == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) {
+            return 0;
+        }
+        return (value + 128) * 10;
+    }
+
+    static int goodEnoughtFee(byte value) {
+        if (value == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) {
+            return 0;
+        }
+        return (value + 128) * 10;
     }
 }

@@ -3,18 +3,15 @@ package mybot;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 // {index, adds: {team:{0: [updates], 1: [updates]}}, removals: {team:{0: [updates], 1: [updates]}}}
 public class MMapUpdates extends MMessage {
     byte index;
-    Map<Team, MMapUpdate[]> adds;
-    Map<Team, MMapUpdate[]> removals;
+    Map<Team, List<MMapUpdate>> adds;
+    Map<Team, List<MMapUpdate>> removals;
 
-    public MMapUpdates(byte index, Map<Team, MMapUpdate[]> adds, Map<Team, MMapUpdate[]> removals) {
+    public MMapUpdates(byte index, Map<Team, List<MMapUpdate>> adds, Map<Team, List<MMapUpdate>> removals) {
         assert adds != null;
         assert removals != null;
         this.index = index;
@@ -27,25 +24,25 @@ public class MMapUpdates extends MMessage {
         from ++;
         byte index = bytes[from++];
         byte addsSize = bytes[from++];
-        Map<Team, MMapUpdate[]> adds = new HashMap<>();
-        for (int i = 0; i < addsSize; i++) {
+        Map<Team, List<MMapUpdate>> adds = new HashMap<>();
+        for (byte i = 0; i < addsSize; i++) {
             Team key = Team.values()[bytes[from++]];
             int valuesCount = bytes[from++];
-            MMapUpdate[] values = new MMapUpdate[valuesCount];
-            for (int j = 0; j < valuesCount; j++) {
-                values[j] = MMapUpdate.read(bytes, from);
+            List<MMapUpdate> values = new LinkedList<>();
+            for (byte j = 0; j < valuesCount; j++) {
+                values.add(MMapUpdate.read(bytes, from));
                 from += MMapUpdate.size;
             }
             adds.put(key, values);
         }
         byte removalsSize = bytes[from++];
-        Map<Team, MMapUpdate[]> removals = new HashMap<>();
-        for (int i = 0; i < removalsSize; i++) {
+        Map<Team, List<MMapUpdate>> removals = new HashMap<>();
+        for (byte i = 0; i < removalsSize; i++) {
             Team key = Team.values()[bytes[from++]];
             int valuesCount = bytes[from++];
-            MMapUpdate[] values = new MMapUpdate[valuesCount];
-            for (int j = 0; j < valuesCount; j++) {
-                values[j] = MMapUpdate.read(bytes, from);
+            List<MMapUpdate> values = new LinkedList<>();
+            for (byte j = 0; j < valuesCount; j++) {
+                values.add(MMapUpdate.read(bytes, from));
                 from += MMapUpdate.size;
             }
             removals.put(key, values);
@@ -60,24 +57,24 @@ public class MMapUpdates extends MMessage {
         bytes[from++] = header;
         bytes[from++] = l.index;
         bytes[from++] = (byte) l.adds.size();
-        for (Map.Entry<Team, MMapUpdate[]> entry : l.adds.entrySet()) {
+        for (Map.Entry<Team, List<MMapUpdate>> entry : l.adds.entrySet()) {
             bytes[from++] = (byte) entry.getKey().ordinal();
-            bytes[from++] = (byte) entry.getValue().length;
+            bytes[from++] = (byte) entry.getValue().size();
             for (MMapUpdate update : entry.getValue()) {
                 MMapUpdate.write(update, bytes, from);
                 from += MMapUpdate.size;
             }
         }
         bytes[from++] = (byte) l.removals.size();
-        for (Map.Entry<Team, MMapUpdate[]> entry : l.removals.entrySet()) {
+        for (Map.Entry<Team, List<MMapUpdate>> entry : l.removals.entrySet()) {
             bytes[from++] = (byte) entry.getKey().ordinal();
-            bytes[from++] = (byte) entry.getValue().length;
+            bytes[from++] = (byte) entry.getValue().size();
             for (MMapUpdate update : entry.getValue()) {
                 MMapUpdate.write(update, bytes, from);
                 from += MMapUpdate.size;
             }
         }
-        return from > 28;
+        return from <= 28;
     }
 
     @Override

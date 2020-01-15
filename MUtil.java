@@ -3,7 +3,7 @@ package mybot;
 public class MUtil {
     //region Ints to Bytes and back
     static int[] bytesToIntArray(byte[] array) {
-        assert array.length == 28;
+//        assert array.length == 28;
 
         int[] result = new int[7];
 
@@ -19,7 +19,7 @@ public class MUtil {
 
 
     static byte[] intArrayToBytes(int[] array) {
-        assert array.length == 7;
+//        assert array.length == 7;
 
         byte[] result = new byte[28];
 
@@ -50,4 +50,12 @@ public class MUtil {
         return ret;
     }
     //endregion
+
+    static byte intAsUnsignedByte(int value) {
+        return (byte) (value - 128);
+    }
+
+    static int unsignedByteAsInt(byte value) {
+        return value + 128;
+    }
 }
