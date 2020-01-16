@@ -16,9 +16,9 @@ public strictfp class LHQ {
             Map<Team, List<MMapUpdate>> adds = new HashMap<>();
             adds.put(GS.c.getTeam(), Collections.singletonList(new MMapUpdate(GS.c.getLocation(), RobotType.HQ)));
             int[] txData = UBlockchain.messageToTXData(new MMapUpdates((byte) 0, adds, Collections.emptyMap()));
-            // todo fee? ges last block fees
-            if (GS.c.canSubmitTransaction(txData, 10)) {
-                GS.c.submitTransaction(txData, 10);
+            int fee = UBlockchain.bestBee();
+            if (fee > 0) {
+                GS.c.submitTransaction(txData, fee);
             }
         }
         for (Direction dir : UDirections.all)

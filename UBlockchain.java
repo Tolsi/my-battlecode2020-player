@@ -1,8 +1,12 @@
 package mybot;
 
+import battlecode.common.GameActionException;
+import battlecode.common.Transaction;
+
 public class UBlockchain {
     //region CRC
     static byte CRC_BYTE = 27;
+
     static byte checksum(byte[] bytes) {
         int checksum = 19283;
         for (int i = 0; i < CRC_BYTE; i++) {
@@ -82,17 +86,46 @@ public class UBlockchain {
         return (value + 128) * 10;
     }
 
-    static int bestFee(byte value) {
-        if (value == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) {
-            return 0;
+    private static Integer bestFee() throws GameActionException {
+        Transaction[] txs = GS.c.getBlock(GS.c.getRoundNum() - 1);
+        int maxFee = Integer.MIN_VALUE;
+        for (Transaction tx : txs) {
+            int cost = tx.getCost();
+            if (cost > maxFee) {
+                maxFee = cost;
+            }
         }
-        return (value + 128) * 10;
+        if (maxFee == Integer.MIN_VALUE) {
+            return null;
+        } else {
+            return maxFee;
+        }
     }
 
-    static int goodEnoughtFee(byte value) {
-        if (value == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) {
-            return 0;
+    private static Integer goodEnoughFee() throws GameActionException {
+        Transaction[] txs = GS.c.getBlock(GS.c.getRoundNum() - 1);
+        int minFee = Integer.MAX_VALUE;
+        for (Transaction tx : txs) {
+            int cost = tx.getCost();
+            if (cost < minFee) {
+                minFee = cost;
+            }
         }
-        return (value + 128) * 10;
+        if (minFee == Integer.MAX_VALUE) {
+            return null;
+        } else {
+            return minFee;
+        }
+    }
+
+    static int bestBee() throws GameActionException {
+        Integer goodEnoughFee = UBlockchain.goodEnoughFee();
+        int fee = 1;
+        if (goodEnoughFee == null) {
+            fee = Math.min(fee, GS.c.getTeamSoup());
+        } else {
+            fee = goodEnoughFee;
+        }
+        return fee;
     }
 }

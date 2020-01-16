@@ -55,9 +55,8 @@ public strictfp class LMiner {
             newSoupLocations = newSoupLocations.subList(0, Math.min(8, newSoupLocations.size()));
             int[] txData = UBlockchain.messageToTXData(new MSoupLocations(newSoupLocations));
             System.out.printf("Send %d new soup locations to the blockchain\n", newSoupLocations.size());
-            // todo fee? ges last block fees
-            int fee = Math.min(GS.c.getTeamSoup(), 10);
-            if (GS.c.canSubmitTransaction(txData, fee)) {
+            int fee = UBlockchain.bestBee();
+            if (fee > 0) {
                 GS.c.submitTransaction(txData, fee);
             }
         }
