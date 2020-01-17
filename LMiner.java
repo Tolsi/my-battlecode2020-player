@@ -11,18 +11,6 @@ public strictfp class LMiner {
     static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
 
-    static void stepRandomlyAndMayBeBuildRefinery() throws GameActionException {
-        if (GS.tryMove(UDirections.randomDirection())) {
-            // otherwise, move randomly as usual
-            System.out.println("I moved randomly!");
-        } else {
-            if (Math.random() < 0.1 && GS.c.getTeamSoup() >= 200) {
-                findPlaceAndBuild(RobotType.REFINERY);
-            }
-        }
-
-    }
-
     static boolean findPlaceAndBuild(RobotType type) throws GameActionException {
         for (Direction dir : UDirections.withoutCenter) {
             MapLocation point = GS.c.getLocation().add(dir);
@@ -51,14 +39,28 @@ public strictfp class LMiner {
     }
 
     static void run() throws GameActionException {
+        boolean canStay = false;
+
+        List<MSoupLocation> newSoupLocations = new LinkedList<>();
+        for (Direction dir : UDirections.withoutCenter) {
+            if (GS.tryRefine(dir)) {
+                System.out.println("I refined soup! " + GS.c.getTeamSoup());
+                break;
+            }
+            if (GS.c.getSoupCarrying() < RobotType.MINER.soupLimit && GS.tryMine(dir)) {
+                System.out.println("I mined soup! " + GS.c.getSoupCarrying());
+                canStay = true;
+                break;
+            }
+        }
+
         //region Looking for new soup
         MapLocation l = GS.c.getLocation();
         int radius = (int) Math.sqrt(GS.c.getCurrentSensorRadiusSquared());
-        List<MSoupLocation> newSoupLocations = new LinkedList<>();
         for (int x = l.x - radius; x < l.x + radius; x++) {
             if (x >= 0 && x < GS.c.getMapWidth()) {
-                for (int y = l.x - radius; y < l.y + radius; y++) {
-                    if (y >= 0 && x < GS.c.getMapHeight()) {
+                for (int y = l.y - radius; y < l.y + radius; y++) {
+                    if (y >= 0 && y < GS.c.getMapHeight()) {
                         MapLocation point = new MapLocation(x, y);
                         if (GS.c.canSenseLocation(point)) {
                             int soupValue = GS.c.senseSoup(point);
@@ -96,19 +98,6 @@ public strictfp class LMiner {
         //endregion
 
         //region Make action
-        boolean canStay = false;
-        for (Direction dir : UDirections.all) {
-            if (GS.tryRefine(dir)) {
-                System.out.println("I refined soup! " + GS.c.getTeamSoup());
-                break;
-            }
-            if (GS.c.getSoupCarrying() < RobotType.MINER.soupLimit && GS.tryMine(dir)) {
-                System.out.println("I mined soup! " + GS.c.getSoupCarrying());
-                canStay = true;
-                break;
-            }
-        }
-
         if (GS.c.getTeamSoup() >= RobotType.DESIGN_SCHOOL.cost &&
                 SMap.filterBuildingTypes(RobotType.DESIGN_SCHOOL).size() == 0 &&
                 Math.random() < 0.1) {
@@ -120,8 +109,10 @@ public strictfp class LMiner {
             MapLocation returnTo = SMap.closestLocations(GS.c.getLocation(), SMap.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
             if (GS.c.getSoupCarrying() == RobotType.MINER.soupLimit && returnTo != null) {
                 // time to go back to the HQ or refinery
-                if (GS.goTo(GS.c.getLocation().directionTo(SMap.hqLoc)))
+                if (GS.goTo(GS.c.getLocation().directionTo(SMap.hqLoc))) {
+                    GS.c.setIndicatorLine(GS.c.getLocation(), SMap.hqLoc, 255, 255, 0);
                     System.out.println("moved towards HQ");
+                }
             } else {
                 MapLocation closestSoupLocation = SMap.closestLocations(GS.c.getLocation(), SMap.soupLocations);
                 if (closestSoupLocation != null) {

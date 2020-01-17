@@ -59,7 +59,10 @@ public strictfp class LLandscaper {
                 if (SMap.hqLoc != null) {
                     if (GS.c.isReady()) {
                         Direction toHQ = GS.c.getLocation().directionTo(SMap.hqLoc);
-                        if (bestPlaceToBuildWall != null && GS.c.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
+                        if (bestPlaceToBuildWall == null) {
+                            if (!GS.goTo(toHQ)) {
+                            }
+                        } else if (GS.c.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit) {
                             // todo log all this shit
                             if (!GS.goTo(GS.c.getLocation().directionTo(bestPlaceToBuildWall))) {
                                 if (!GS.goTo(toHQ)) {
