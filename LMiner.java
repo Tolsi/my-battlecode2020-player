@@ -21,10 +21,9 @@ public strictfp class LMiner {
     }
 
     static void run() throws GameActionException {
+        //region Looking for new soup
         MapLocation l = GS.c.getLocation();
-        int radiusSquared = GS.c.getCurrentSensorRadiusSquared();
         int radius = (int) Math.sqrt(GS.c.getCurrentSensorRadiusSquared());
-
         List<MSoupLocation> newSoupLocations = new LinkedList<>();
         for (int x = l.x - radius; x < l.x + radius; x++) {
             if (x >= 0 && x < GS.c.getMapWidth()) {
@@ -49,44 +48,73 @@ public strictfp class LMiner {
 //                System.out.printf("%d: I'm a %s[%d] - soup scan - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
             }
         }
-//        System.out.printf("%d: I'm a %s[%d] - after soup scan - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
+        //endregion
+
+        //region Write new found soup to blockchain
+        //        System.out.printf("%d: I'm a %s[%d] - after soup scan - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
         if (newSoupLocations.size() > 0) {
             // take only first 8 messages to not get buffer overflow
             newSoupLocations = newSoupLocations.subList(0, Math.min(8, newSoupLocations.size()));
             int[] txData = UBlockchain.messageToTXData(new MSoupLocations(newSoupLocations));
             System.out.printf("Send %d new soup locations to the blockchain\n", newSoupLocations.size());
-            int fee = UBlockchain.bestBee();
+            int fee = UBlockchain.bestFee();
             if (fee > 0) {
                 GS.c.submitTransaction(txData, fee);
             }
         }
         System.out.printf("%d: I'm a %s[%d] - after blockchain send - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
+        //endregion
 
+        //region Make action
+        boolean canStay = false;
         for (Direction dir : UDirections.all) {
             if (GS.tryRefine(dir)) {
                 System.out.println("I refined soup! " + GS.c.getTeamSoup());
                 break;
             }
-            if (GS.tryMine(dir)) {
+            if (GS.c.getSoupCarrying() < RobotType.MINER.soupLimit && GS.tryMine(dir)) {
                 System.out.println("I mined soup! " + GS.c.getSoupCarrying());
+                canStay = true;
                 break;
             }
         }
-        if (GS.c.getSoupCarrying() == RobotType.MINER.soupLimit && SMap.hqLoc != null) {
-            // time to go back to the HQ
-            for (Direction dirToHQ : UDirections.allDirectionsTo(GS.c.getLocation(), SMap.hqLoc))
-                if (GS.tryMove(dirToHQ))
-                    System.out.println("moved towards HQ");
-        } else {
-            MapLocation closestSoupLocation = SMap.closestSoupLocations(GS.c.getLocation());
-            if (closestSoupLocation != null) {
-                for (Direction dirToSoup : UDirections.allDirectionsTo(GS.c.getLocation(), closestSoupLocation))
-                    if (GS.tryMove(dirToSoup))
-                        System.out.printf("moved to closest soup: %s\n", closestSoupLocation);
-            } else if (GS.tryMove(UDirections.randomDirection())) { // todo research location here
-                // otherwise, move randomly as usual
-                System.out.println("I moved randomly!");
+
+        if (GS.c.getTeamSoup() >= RobotType.DESIGN_SCHOOL.cost &&
+                SMap.filterBuildingTypes(RobotType.DESIGN_SCHOOL).size() == 0) {
+//        GS.nearbyRobots = GS.c.senseNearbyRobots();
+            for (Direction dir : UDirections.all) {
+                MapLocation point = GS.c.getLocation().add(dir);
+                if (SMap.mySoupMap[point.x][point.y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) {
+                    if (GS.tryBuild(RobotType.DESIGN_SCHOOL, dir))
+                        System.out.println("created a design school");
+                }
             }
         }
+
+        if (!canStay) {
+            MapLocation returnTo = SMap.closestLocations(GS.c.getLocation(), SMap.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
+            if (GS.c.getSoupCarrying() == RobotType.MINER.soupLimit && returnTo != null) {
+                // time to go back to the HQ or refinery
+                if (GS.goTo(GS.c.getLocation().directionTo(SMap.hqLoc)))
+                    System.out.println("moved towards HQ");
+            } else {
+                MapLocation closestSoupLocation = SMap.closestLocations(GS.c.getLocation(), SMap.soupLocations);
+                if (closestSoupLocation != null) {
+                    if (GS.goTo(GS.c.getLocation().directionTo(closestSoupLocation))) {
+                        GS.c.setIndicatorLine(GS.c.getLocation(), closestSoupLocation, 255, 255, 0);
+                        System.out.printf("moved to closest soup: %s\n", closestSoupLocation);
+                    } else {
+                        if (GS.tryMove(UDirections.randomDirection())) {
+                            // otherwise, move randomly as usual
+                            System.out.println("I moved randomly!");
+                        }
+                    }
+                } else if (GS.tryMove(UDirections.randomDirection())) { // todo research location here
+                    // otherwise, move randomly as usual
+                    System.out.println("I moved randomly!");
+                }
+            }
+        }
+        //endregion
     }
 }

@@ -1,14 +1,12 @@
 package mybot;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.RobotController;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 public strictfp class GS {
     static RobotController c;
     static int lifespan;
     static SMap map;
+    static RobotInfo[] nearbyRobots = null;
 
     static boolean tryMove() throws GameActionException {
         for (Direction dir : UDirections.all)
@@ -26,6 +24,11 @@ public strictfp class GS {
         //     return tryMove(Direction.NORTH);
     }
 
+    // checks if the direction is legal and not flooded
+    static boolean safeToMove(Direction dir) throws GameActionException {
+        return !c.senseFlooding(c.getLocation().add(dir));
+    }
+
     /**
      * Attempts to move in a given direction.
      *
@@ -33,19 +36,36 @@ public strictfp class GS {
      * @return true if a move was performed
      * @throws GameActionException
      */
-    static boolean tryMove(Direction dir) throws GameActionException {
+    static boolean tryMove(Direction dir, boolean checkSafe) throws GameActionException {
         // System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
-        if (c.isReady() && c.canMove(dir)) {
+        if (c.isReady() && c.canMove(dir) && (!checkSafe || safeToMove(dir))) {
             c.move(dir);
             return true;
         } else return false;
+    }
+
+    static boolean tryMove(Direction dir) throws GameActionException {
+        return tryMove(dir, true);
+    }
+
+    static boolean goTo(Direction dir) throws GameActionException {
+        Direction[] toTry = {dir, dir.rotateLeft(), dir.rotateRight(), dir.rotateLeft().rotateLeft(), dir.rotateRight().rotateRight()};
+        for (Direction d : toTry) {
+            if (tryMove(d))
+                return true;
+        }
+        return false;
+    }
+
+    static boolean goOut(Direction dir) throws GameActionException {
+        return goTo(dir.opposite());
     }
 
     /**
      * Attempts to build a given robot in a given direction.
      *
      * @param type The type of the robot to build
-     * @param dir The intended direction of movement
+     * @param dir  The intended direction of movement
      * @return true if a move was performed
      * @throws GameActionException
      */
@@ -88,5 +108,22 @@ public strictfp class GS {
         int[] msg = UBlockchain.messageToTXData(m);
         if (c.canSubmitTransaction(msg, 10))
             c.submitTransaction(msg, 10);
+    }
+
+    static boolean tryDig() throws GameActionException {
+        int maxElevation = Integer.MIN_VALUE;
+        Direction bestDir = null;
+        for (Direction dir : UDirections.all) {
+            int elevation = GS.c.senseElevation(GS.c.getLocation().add(dir));
+            if (elevation > maxElevation && GS.c.canDigDirt(dir)) {
+                maxElevation = elevation;
+                bestDir = dir;
+            }
+        }
+        if (bestDir != null) {
+            GS.c.digDirt(bestDir);
+            return true;
+        }
+        return false;
     }
 }

@@ -2,10 +2,7 @@ package mybot;
 
 import battlecode.common.*;
 
-import java.util.LinkedList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SMap {
     /**
@@ -13,12 +10,15 @@ public class SMap {
      */
     static byte[][] mySoupMap;
     static byte[][] blockchainSoupMap;
+
     static Map<MapLocation, Byte> soupLocations;
+    static Map<MapLocation, RobotType> buildingsLocations;
     //    private static RobotInfo[][] robots;
     static MapLocation hqLoc;
 
     static void init(RobotController rc) throws GameActionException {
         soupLocations = new HashMap<>();
+        buildingsLocations = new HashMap<>();
         mySoupMap = new byte[rc.getMapWidth()][];
         for (byte i = 0; i < rc.getMapWidth(); i++) {
             mySoupMap[i] = new byte[rc.getMapHeight()];
@@ -58,6 +58,7 @@ public class SMap {
                         if (update.type == RobotType.HQ) {
                             hqLoc = update.location;
                         }
+                        buildingsLocations.put(update.location, update.type);
                     }
                 }
             }
@@ -82,11 +83,11 @@ public class SMap {
 
     }
 
-    static MapLocation closestSoupLocations(MapLocation to) {
+    static MapLocation closestLocations(MapLocation to, Map<MapLocation, ?> among) {
         if (soupLocations.isEmpty()) {
             return null;
         } else {
-            List<MapLocation> locations = new LinkedList<>(soupLocations.keySet());
+            List<MapLocation> locations = new LinkedList<>(among.keySet());
             int minDistance = Integer.MAX_VALUE;
             int minIndex = -1;
             for (int i = 0; i < locations.size(); i++) {
@@ -99,5 +100,16 @@ public class SMap {
             }
             return locations.get(minIndex);
         }
+    }
+
+    static Map<MapLocation, RobotType> filterBuildingTypes(RobotType ... types) {
+        Set<RobotType> typesSet = new HashSet<>(Arrays.asList(types));
+        Map<MapLocation, RobotType> result = new HashMap<>();
+        for (Map.Entry<MapLocation, RobotType> kv: buildingsLocations.entrySet()) {
+            if (typesSet.contains(kv.getValue())) {
+                result.put(kv.getKey(), kv.getValue());
+            }
+        }
+        return result;
     }
 }

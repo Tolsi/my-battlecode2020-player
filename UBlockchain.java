@@ -1,7 +1,13 @@
 package mybot;
 
 import battlecode.common.GameActionException;
+import battlecode.common.Team;
 import battlecode.common.Transaction;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class UBlockchain {
     //region CRC
@@ -14,10 +20,12 @@ public class UBlockchain {
         }
         return (byte) ((checksum % 255) - 128);
     }
+
     static void addCRC(byte[] bytes) {
         // crc byte
         bytes[CRC_BYTE] = checksum(bytes);
     }
+
     static boolean checkCRC(byte[] bytes) {
         return checksum(bytes) == bytes[CRC_BYTE];
     }
@@ -86,7 +94,7 @@ public class UBlockchain {
         return (value + 128) * 10;
     }
 
-    private static Integer bestFee() throws GameActionException {
+    private static Integer biggerFeeInLastBlock() throws GameActionException {
         Transaction[] txs = GS.c.getBlock(GS.c.getRoundNum() - 1);
         int maxFee = Integer.MIN_VALUE;
         for (Transaction tx : txs) {
@@ -102,7 +110,7 @@ public class UBlockchain {
         }
     }
 
-    private static Integer goodEnoughFee() throws GameActionException {
+    private static Integer smallerFeeInLastBlock() throws GameActionException {
         Transaction[] txs = GS.c.getBlock(GS.c.getRoundNum() - 1);
         int minFee = Integer.MAX_VALUE;
         for (Transaction tx : txs) {
@@ -118,8 +126,8 @@ public class UBlockchain {
         }
     }
 
-    static int bestBee() throws GameActionException {
-        Integer goodEnoughFee = UBlockchain.goodEnoughFee();
+    static int bestFee() throws GameActionException {
+        Integer goodEnoughFee = UBlockchain.smallerFeeInLastBlock();
         int fee = 1;
         if (goodEnoughFee == null) {
             fee = Math.min(fee, GS.c.getTeamSoup());
@@ -127,5 +135,21 @@ public class UBlockchain {
             fee = goodEnoughFee;
         }
         return fee;
+    }
+
+    static boolean sent = false;
+    static boolean sendWhatICreated() throws GameActionException {
+        if (!SMap.buildingsLocations.containsKey(GS.c.getLocation()) && !sent) {
+            Map<Team, List<MMapUpdate>> adds = new HashMap<>();
+            adds.put(GS.c.getTeam(), Collections.singletonList(new MMapUpdate(GS.c.getLocation(), GS.c.getType())));
+            int[] txData = UBlockchain.messageToTXData(new MMapUpdates((byte) 0, adds, Collections.emptyMap()));
+            int fee = UBlockchain.bestFee();
+            if (fee > 0) {
+                GS.c.submitTransaction(txData, fee);
+                sent = true;
+                return true;
+            }
+        }
+        return false;
     }
 }

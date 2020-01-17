@@ -8,6 +8,14 @@ import java.util.List;
 
 public class UDirections {
     static Direction[] all = Direction.values();
+    static Direction[] withoutCenter = {Direction.NORTH,
+            Direction.NORTHEAST,
+            Direction.EAST,
+            Direction.SOUTHEAST,
+            Direction.SOUTH,
+            Direction.SOUTHWEST,
+            Direction.WEST,
+            Direction.NORTHWEST};
 
     /**
      * Returns a random Direction.
@@ -16,6 +24,11 @@ public class UDirections {
      */
     static Direction randomDirection() {
         return all[(int) (Math.random() * all.length)];
+    }
+
+    static Direction randomDirectionTo(Direction dir) {
+        Direction[] directions = {dir, dir.rotateLeft(), dir.rotateRight(), dir.rotateLeft().rotateLeft(), dir.rotateRight().rotateRight()};
+        return directions[(int) (Math.random() * directions.length)];
     }
 
     static List<Direction> allDirectionsTo(MapLocation current, MapLocation to) {

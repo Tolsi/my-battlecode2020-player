@@ -3,25 +3,20 @@ package mybot;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotType;
-import battlecode.common.Team;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public strictfp class LHQ {
+    private static int minersCount = 0;
     static void run() throws GameActionException {
-        if (SMap.hqLoc == null) {
-            Map<Team, List<MMapUpdate>> adds = new HashMap<>();
-            adds.put(GS.c.getTeam(), Collections.singletonList(new MMapUpdate(GS.c.getLocation(), RobotType.HQ)));
-            int[] txData = UBlockchain.messageToTXData(new MMapUpdates((byte) 0, adds, Collections.emptyMap()));
-            int fee = UBlockchain.bestBee();
-            if (fee > 0) {
-                GS.c.submitTransaction(txData, fee);
+        if (UBlockchain.sendWhatICreated()) {
+            System.out.println("Write to blockchain that I was created");
+        }
+        // todo if there're a lot of soup, more than team target to build
+        // todo optimize this parameters?!
+        if (minersCount < 6 || SMap.buildingsLocations.size() > 2 && GS.c.getTeamSoup() > 200) {
+            for (Direction dir : UDirections.all) {
+                GS.tryBuild(RobotType.MINER, dir);
+                minersCount += 1;
             }
         }
-        for (Direction dir : UDirections.all)
-            GS.tryBuild(RobotType.MINER, dir);
     }
 }
