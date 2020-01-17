@@ -10,7 +10,37 @@ import static mybot.UBlockchain.saveSoupAsByte;
 public strictfp class LMiner {
     static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
-    
+
+    static void stepRandomlyAndMayBeBuildRefinery() throws GameActionException {
+        if (GS.tryMove(UDirections.randomDirection())) {
+            // otherwise, move randomly as usual
+            System.out.println("I moved randomly!");
+        } else {
+            if (Math.random() < 0.1 && GS.c.getTeamSoup() >= 200) {
+                findPlaceAndBuild(RobotType.REFINERY);
+            }
+        }
+
+    }
+
+    static boolean findPlaceAndBuild(RobotType type) throws GameActionException {
+        for (Direction dir : UDirections.withoutCenter) {
+            MapLocation point = GS.c.getLocation().add(dir);
+            if (SMap.mySoupMap[point.x][point.y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) {
+                if (GS.tryBuild(type, dir)) {
+                    System.out.println("created a design school");
+                    if (UBlockchain.sendWhatIBuild(point, type)) {
+                        System.out.println("write it on blockchain");
+                    } else {
+                        System.out.println("can't write it on blockchain");
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Returns a random RobotType spawned by miners.
      *
@@ -80,15 +110,10 @@ public strictfp class LMiner {
         }
 
         if (GS.c.getTeamSoup() >= RobotType.DESIGN_SCHOOL.cost &&
-                SMap.filterBuildingTypes(RobotType.DESIGN_SCHOOL).size() == 0) {
+                SMap.filterBuildingTypes(RobotType.DESIGN_SCHOOL).size() == 0 &&
+                Math.random() < 0.1) {
 //        GS.nearbyRobots = GS.c.senseNearbyRobots();
-            for (Direction dir : UDirections.all) {
-                MapLocation point = GS.c.getLocation().add(dir);
-                if (SMap.mySoupMap[point.x][point.y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) {
-                    if (GS.tryBuild(RobotType.DESIGN_SCHOOL, dir))
-                        System.out.println("created a design school");
-                }
-            }
+            findPlaceAndBuild(RobotType.DESIGN_SCHOOL);
         }
 
         if (!canStay) {

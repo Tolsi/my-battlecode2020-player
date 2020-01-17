@@ -14,8 +14,10 @@ public strictfp class LHQ {
         // todo optimize this parameters?!
         if (minersCount < 6 || SMap.buildingsLocations.size() > 2 && GS.c.getTeamSoup() > 200) {
             for (Direction dir : UDirections.all) {
-                GS.tryBuild(RobotType.MINER, dir);
-                minersCount += 1;
+                if (GS.tryBuild(RobotType.MINER, dir)) {
+                    minersCount += 1;
+                    System.out.println("made a miner");
+                }
             }
         }
     }

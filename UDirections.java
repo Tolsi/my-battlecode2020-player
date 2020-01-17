@@ -23,7 +23,7 @@ public class UDirections {
      * @return a random Direction
      */
     static Direction randomDirection() {
-        return all[(int) (Math.random() * all.length)];
+        return all[(int) (Math.random() * withoutCenter.length)];
     }
 
     static Direction randomDirectionTo(Direction dir) {

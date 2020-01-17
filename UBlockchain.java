@@ -1,8 +1,6 @@
 package mybot;
 
-import battlecode.common.GameActionException;
-import battlecode.common.Team;
-import battlecode.common.Transaction;
+import battlecode.common.*;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -147,6 +145,20 @@ public class UBlockchain {
             if (fee > 0) {
                 GS.c.submitTransaction(txData, fee);
                 sent = true;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean sendWhatIBuild(MapLocation l, RobotType t) throws GameActionException {
+        if (!SMap.buildingsLocations.containsKey(GS.c.getLocation())) {
+            Map<Team, List<MMapUpdate>> adds = new HashMap<>();
+            adds.put(GS.c.getTeam(), Collections.singletonList(new MMapUpdate(l, t)));
+            int[] txData = UBlockchain.messageToTXData(new MMapUpdates((byte) 0, adds, Collections.emptyMap()));
+            int fee = UBlockchain.bestFee();
+            if (fee > 0) {
+                GS.c.submitTransaction(txData, fee);
                 return true;
             }
         }

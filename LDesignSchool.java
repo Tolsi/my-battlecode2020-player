@@ -8,9 +8,6 @@ public strictfp class LDesignSchool {
     private static int landscapersCount = 0;
 
     static void run() throws GameActionException {
-        if (UBlockchain.sendWhatICreated()) {
-            System.out.println("Write to blockchain that I was created");
-        }
         if (landscapersCount < 3) {
             for (Direction dir : UDirections.all)
                 if (GS.tryBuild(RobotType.LANDSCAPER, dir)) {

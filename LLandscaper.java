@@ -11,13 +11,33 @@ public strictfp class LLandscaper {
     private static int lowestElevation = Integer.MAX_VALUE;
     private static MapLocation bestPlaceToBuildWall = null;
 
+    static boolean findGoodPlaceAndDig() throws GameActionException {
+        int maxElevation = Integer.MIN_VALUE;
+        Direction bestDir = null;
+        for (Direction dir : UDirections.withoutCenter) {
+            MapLocation point = GS.c.getLocation().add(dir);
+            int elevation = GS.c.senseElevation(point);
+            if (point.x % 2 == 0 &&
+                    point.y % 2 == 0 &&
+                    elevation > maxElevation && GS.c.canDigDirt(dir)) {
+                maxElevation = elevation;
+                bestDir = dir;
+            }
+        }
+        if (bestDir != null) {
+            GS.c.digDirt(bestDir);
+            return true;
+        }
+        return false;
+    }
+
     static void run() throws GameActionException {
         if (SMap.hqLoc != null) {
             if (GS.c.isReady()) {
                 // todo don't dig intil the water
                 int distanceToHQ = GS.c.getLocation().distanceSquaredTo(SMap.hqLoc);
                 if (GS.c.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit && distanceToHQ >= 16) {
-                    GS.tryDig();
+                    findGoodPlaceAndDig();
                 } else if (bestPlaceToBuildWall != null &&
                         GS.c.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit &&
                         GS.c.getLocation().distanceSquaredTo(bestPlaceToBuildWall) < 4 &&
@@ -46,7 +66,7 @@ public strictfp class LLandscaper {
                                 }
                             }
                         } else {
-                            if (Math.random() < 0.4 && distanceToHQ < 9) {
+                            if (Math.random() < 0.6 && distanceToHQ < 9) {
                                 GS.tryMove(randomDirection());
                             } else {
                                 if (!GS.goOut(toHQ)) {

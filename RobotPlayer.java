@@ -1,7 +1,11 @@
 package mybot;
-import battlecode.common.*;
+
+import battlecode.common.Clock;
+import battlecode.common.GameActionException;
+import battlecode.common.RobotController;
 
 public strictfp class RobotPlayer {
+    private static int lastSeenBlockUntil = 1;
 
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -25,7 +29,10 @@ public strictfp class RobotPlayer {
                 // You can add the missing ones or rewrite this into your own control structure.
                 System.out.printf("%d: I'm a %s[%d] at %s - STARTED - Spent=%d \n", rc.getRoundNum(), rc.getType(), rc.getID(), rc.getLocation(), Clock.getBytecodeNum());
                 if (rc.getRoundNum() > 1) {
-                    SMap.update(rc, rc.getRoundNum() - 1);
+                    for (int i = lastSeenBlockUntil; i < rc.getRoundNum(); i++) {
+                        SMap.update(rc, i);
+                        lastSeenBlockUntil = rc.getRoundNum();
+                    }
                 }
                 System.out.printf("%d: I'm a %s[%d] - after update - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
                 switch (rc.getType()) {

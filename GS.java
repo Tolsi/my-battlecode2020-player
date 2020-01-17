@@ -110,18 +110,9 @@ public strictfp class GS {
             c.submitTransaction(msg, 10);
     }
 
-    static boolean tryDig() throws GameActionException {
-        int maxElevation = Integer.MIN_VALUE;
-        Direction bestDir = null;
-        for (Direction dir : UDirections.all) {
-            int elevation = GS.c.senseElevation(GS.c.getLocation().add(dir));
-            if (elevation > maxElevation && GS.c.canDigDirt(dir)) {
-                maxElevation = elevation;
-                bestDir = dir;
-            }
-        }
-        if (bestDir != null) {
-            GS.c.digDirt(bestDir);
+    static boolean tryDig(Direction direction) throws GameActionException {
+        if (GS.c.canDigDirt(direction)) {
+            GS.c.digDirt(direction);
             return true;
         }
         return false;
