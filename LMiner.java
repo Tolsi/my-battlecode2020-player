@@ -82,6 +82,13 @@ public strictfp class LMiner {
         }
         //endregion
 
+        GS.nearbyRobots = GS.c.senseNearbyRobots();
+        for (RobotInfo ri: GS.nearbyRobots) {
+            if (ri.getTeam() != GS.c.getTeam() && GS.c.getTeamSoup() >= RobotType.NET_GUN.cost) {
+                findPlaceAndBuild(RobotType.NET_GUN);
+            }
+        }
+
         //region Write new found soup to blockchain
         //        System.out.printf("%d: I'm a %s[%d] - after soup scan - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
         if (newSoupLocations.size() > 0) {
