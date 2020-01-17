@@ -10,9 +10,10 @@ import java.util.Map;
 public class UBlockchain {
     //region CRC
     static byte CRC_BYTE = 27;
+    static byte teamByte = 0;
 
     static byte checksum(byte[] bytes) {
-        int checksum = 19283;
+        int checksum = 19283 + teamByte;
         for (int i = 0; i < CRC_BYTE; i++) {
             checksum += bytes[i] * (i - 82);
         }

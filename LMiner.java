@@ -14,6 +14,7 @@ public strictfp class LMiner {
     static boolean findPlaceAndBuild(RobotType type) throws GameActionException {
         for (Direction dir : UDirections.withoutCenter) {
             MapLocation point = GS.c.getLocation().add(dir);
+            // todo or min?
             if (SMap.mySoupMap[point.x][point.y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) {
                 if (GS.tryBuild(type, dir)) {
                     System.out.println("created a design school");
@@ -56,6 +57,7 @@ public strictfp class LMiner {
 
         //region Looking for new soup
         MapLocation l = GS.c.getLocation();
+        int soupAround = 0;
         int radius = (int) Math.sqrt(GS.c.getCurrentSensorRadiusSquared());
         for (int x = l.x - radius; x < l.x + radius; x++) {
             if (x >= 0 && x < GS.c.getMapWidth()) {
@@ -64,6 +66,7 @@ public strictfp class LMiner {
                         MapLocation point = new MapLocation(x, y);
                         if (GS.c.canSenseLocation(point)) {
                             int soupValue = GS.c.senseSoup(point);
+                            soupAround += soupValue;
                             byte soupBytes = saveSoupAsByte(soupValue);
                             if (SMap.mySoupMap[point.x][point.y] != soupBytes) {
                                 SMap.markSoup(point, soupBytes);
@@ -82,13 +85,6 @@ public strictfp class LMiner {
         }
         //endregion
 
-        GS.nearbyRobots = GS.c.senseNearbyRobots();
-        for (RobotInfo ri: GS.nearbyRobots) {
-            if (ri.getTeam() != GS.c.getTeam() && GS.c.getTeamSoup() >= RobotType.NET_GUN.cost) {
-                findPlaceAndBuild(RobotType.NET_GUN);
-            }
-        }
-
         //region Write new found soup to blockchain
         //        System.out.printf("%d: I'm a %s[%d] - after soup scan - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
         if (newSoupLocations.size() > 0) {
@@ -104,7 +100,23 @@ public strictfp class LMiner {
         System.out.printf("%d: I'm a %s[%d] - after blockchain send - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
         //endregion
 
-        //region Make action
+        //region build net gun is there're no any
+        GS.nearbyRobots = GS.c.senseNearbyRobots();
+        for (RobotInfo ri: GS.nearbyRobots) {
+            if (ri.getTeam() != GS.c.getTeam() &&
+                    GS.c.getTeamSoup() >= RobotType.NET_GUN.cost &&
+                    !SMap.nearbyExistsMy(RobotType.NET_GUN) ) {
+                findPlaceAndBuild(RobotType.NET_GUN);
+            }
+        }
+        //endregion
+
+        // todo if can get it? :D
+        if (soupAround > 1000 && GS.c.getLocation().distanceSquaredTo(SMap.hqLoc) > 200 &&
+                GS.c.getTeamSoup() >= RobotType.REFINERY.cost && !SMap.nearbyExistsMy(RobotType.REFINERY)) {
+            findPlaceAndBuild(RobotType.REFINERY);
+        }
+
         if (GS.c.getTeamSoup() >= RobotType.DESIGN_SCHOOL.cost &&
                 SMap.filterBuildingTypes(RobotType.DESIGN_SCHOOL).size() == 0 &&
                 Math.random() < 0.1) {
@@ -112,6 +124,7 @@ public strictfp class LMiner {
             findPlaceAndBuild(RobotType.DESIGN_SCHOOL);
         }
 
+        //region Make action
         if (!canStay) {
             MapLocation returnTo = SMap.closestLocations(GS.c.getLocation(), SMap.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
             if (GS.c.getSoupCarrying() == RobotType.MINER.soupLimit && returnTo != null) {
@@ -123,6 +136,7 @@ public strictfp class LMiner {
             } else {
                 MapLocation closestSoupLocation = SMap.closestLocations(GS.c.getLocation(), SMap.soupLocations);
                 if (closestSoupLocation != null) {
+                    // todo call to landscaper to break the wall
                     if (GS.goTo(GS.c.getLocation().directionTo(closestSoupLocation))) {
                         GS.c.setIndicatorLine(GS.c.getLocation(), closestSoupLocation, 255, 255, 0);
                         System.out.printf("moved to closest soup: %s\n", closestSoupLocation);

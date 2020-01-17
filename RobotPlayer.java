@@ -18,6 +18,7 @@ public strictfp class RobotPlayer {
         // and to get information on its current status.
         GS.c = rc;
         GS.lifespan = 0;
+        UBlockchain.teamByte = (byte) rc.getTeam().ordinal();
         SMap.init(rc);
 
         System.out.printf("%d: I'm a %s[%d] and I just got created!\n", rc.getRoundNum(), rc.getType(), rc.getID());

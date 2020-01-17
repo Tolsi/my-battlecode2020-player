@@ -112,4 +112,13 @@ public class SMap {
         }
         return result;
     }
+
+    static boolean nearbyExistsMy(RobotType type) {
+        for (RobotInfo rt : GS.nearbyRobots) {
+            if (rt.getTeam() == GS.c.getTeam() && rt.getType() == type) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
