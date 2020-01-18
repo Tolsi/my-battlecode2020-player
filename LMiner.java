@@ -104,8 +104,9 @@ public strictfp class LMiner {
         GS.nearbyRobots = GS.c.senseNearbyRobots();
         for (RobotInfo ri: GS.nearbyRobots) {
             if (ri.getTeam() != GS.c.getTeam() &&
+                    ri.getType() == RobotType.DELIVERY_DRONE &&
                     GS.c.getTeamSoup() >= RobotType.NET_GUN.cost &&
-                    !SMap.nearbyExistsMy(RobotType.NET_GUN) ) {
+                    !SMap.nearbyExistsMy(RobotType.NET_GUN)) {
                 findPlaceAndBuild(RobotType.NET_GUN);
             }
         }
