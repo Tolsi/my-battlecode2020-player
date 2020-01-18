@@ -91,7 +91,8 @@ public strictfp class LMiner {
         }
 
         if (GS.c.getTeamSoup() >= RobotType.DESIGN_SCHOOL.cost &&
-                SMap.filterBuildingTypes(RobotType.REFINERY).size() > 0 &&
+                (SMap.filterBuildingTypes(RobotType.REFINERY).size() > 0 ||
+                        GS.c.getTeamSoup() > 500 && GS.c.getRoundNum() > 150) &&
                 SMap.filterBuildingTypes(RobotType.DESIGN_SCHOOL).size() == 0 &&
                 Math.random() < 0.1) {
 //        GS.nearbyRobots = GS.c.senseNearbyRobots();
