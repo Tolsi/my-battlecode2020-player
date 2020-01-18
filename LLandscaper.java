@@ -15,9 +15,7 @@ public strictfp class LLandscaper {
             MapLocation point = GS.c.getLocation().add(dir);
             int elevation = GS.c.senseElevation(point);
             RobotInfo ri = GS.c.senseRobotAtLocation(point);
-            if (point.x % 2 == 0 &&
-                    point.y % 2 == 0 &&
-                    (ri == null || ri.getTeam() != GS.c.getTeam()) &&
+            if ((ri == null || ri.getTeam() != GS.c.getTeam()) &&
                     elevation < minElevation && GS.c.canDigDirt(dir)) {
                 minElevation = elevation;
                 bestDir = dir;
@@ -35,7 +33,6 @@ public strictfp class LLandscaper {
         if (SState.hqLoc != null) {
             if (GS.c.isReady()) {
                 // todo don't dig intil the water
-                int distanceToHQ = GS.c.getLocation().distanceSquaredTo(SState.hqLoc);
                 if (GS.c.getDirtCarrying() < RobotType.LANDSCAPER.dirtLimit && !place) {
                     findGoodPlaceAndDig();
                 } else if (bestPlaceToBuildWall != null &&
@@ -57,29 +54,28 @@ public strictfp class LLandscaper {
                     }
                 }
 
-                if (SState.hqLoc != null) {
-                    if (GS.c.isReady()) {
-                        Direction toHQ = GS.c.getLocation().directionTo(SState.hqLoc);
-                        if (bestPlaceToBuildWall == null) {
+                if (GS.c.isReady() && SState.hqLoc != null) {
+                    Direction toHQ = GS.c.getLocation().directionTo(SState.hqLoc);
+                    if (bestPlaceToBuildWall == null) {
+                        if (!GS.goTo(toHQ)) {
+                        }
+                    } else if (GS.c.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit || place) {
+                        // todo log all this shit
+                        if (!GS.goTo(GS.c.getLocation().directionTo(bestPlaceToBuildWall))) {
                             if (!GS.goTo(toHQ)) {
                             }
-                        } else if (GS.c.getDirtCarrying() == RobotType.LANDSCAPER.dirtLimit || place) {
-                            // todo log all this shit
-                            if (!GS.goTo(GS.c.getLocation().directionTo(bestPlaceToBuildWall))) {
-                                if (!GS.goTo(toHQ)) {
-                                }
-                            }
+                        }
+                    } else {
+                        // todo find best params
+                        int distanceToHQ = GS.c.getLocation().distanceSquaredTo(SState.hqLoc);
+                        if (Math.random() < 0.5 && distanceToHQ < 4) {
+                            GS.tryMove(randomDirection());
                         } else {
-                            // todo find best params
-                            if (Math.random() < 0.5 && distanceToHQ < 4) {
+                            if (!GS.goTo(toHQ)) {
                                 GS.tryMove(randomDirection());
-                            } else {
-                                if (!GS.goOut(toHQ)) {
-                                    GS.tryMove(randomDirection());
-                                }
                             }
                         }
-                    }
+                        }
                 }
             }
         } else {

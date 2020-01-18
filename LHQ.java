@@ -19,20 +19,31 @@ public strictfp class LHQ {
 
         UDebug.drawBuildingCarryingSoup();
         if (!locked) {
-            int distance2LevelMax = Integer.MIN_VALUE;
-            for (Direction dir : UDirections.withoutCenter) {
-                MapLocation tileToCheck = SState.hqLoc.add(dir).add(dir);
-                if (GS.c.canSenseLocation(tileToCheck) && GS.c.senseElevation(tileToCheck) > distance2LevelMax) {
-                    distance2LevelMax = GS.c.senseElevation(tileToCheck);
-                }
-            }
-
-            // todo смотреть реально всё в радиусе 2 клеток
             boolean allAreLocked = true;
             for (Direction dir : UDirections.withoutCenter) {
                 MapLocation tileToCheck = SState.hqLoc.add(dir);
-                if (allAreLocked && GS.c.canSenseLocation(tileToCheck) && Math.abs(GS.c.senseElevation(tileToCheck) - distance2LevelMax) <= 3) {
+                if (allAreLocked && GS.c.canSenseLocation(tileToCheck) && (
+                        (GS.c.senseRobotAtLocation(tileToCheck) == null || GS.c.senseRobotAtLocation(tileToCheck).type == RobotType.MINER)
+                                && !GS.c.senseFlooding(tileToCheck))) {
                     allAreLocked = false;
+                }
+            }
+
+            if (!allAreLocked) {
+                int distance2LevelMax = Integer.MIN_VALUE;
+                for (Direction dir : UDirections.withoutCenter) {
+                    MapLocation tileToCheck = SState.hqLoc.add(dir).add(dir);
+                    if (GS.c.canSenseLocation(tileToCheck) && GS.c.senseElevation(tileToCheck) > distance2LevelMax) {
+                        distance2LevelMax = GS.c.senseElevation(tileToCheck);
+                    }
+                }
+
+                allAreLocked = true;
+                for (Direction dir : UDirections.withoutCenter) {
+                    MapLocation tileToCheck = SState.hqLoc.add(dir);
+                    if (allAreLocked && GS.c.canSenseLocation(tileToCheck) && Math.abs(GS.c.senseElevation(tileToCheck) - distance2LevelMax) <= 3) {
+                        allAreLocked = false;
+                    }
                 }
             }
 

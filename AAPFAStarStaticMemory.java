@@ -1,5 +1,8 @@
 package mybot;
 
+//        AAPFGridAndGoals gridAndGoals = AAPFAnyAnglePathfinding.loadMaze();
+//        int[][] path = AAPFUtility.generatePath(gridAndGoals.gridGraph, gridAndGoals.startGoalPoints.sx, gridAndGoals.startGoalPoints.sy, gridAndGoals.startGoalPoints.ex, gridAndGoals.startGoalPoints.ey);
+//        System.out.println(path);
 public class AAPFAStarStaticMemory extends AAPFPathFindingAlgorithm {
 
     protected AAPFReusableIndirectHeap pq;
