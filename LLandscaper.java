@@ -1,9 +1,6 @@
 package mybot;
 
-import battlecode.common.Direction;
-import battlecode.common.GameActionException;
-import battlecode.common.MapLocation;
-import battlecode.common.RobotType;
+import battlecode.common.*;
 
 import static mybot.UDirections.randomDirection;
 
@@ -17,9 +14,10 @@ public strictfp class LLandscaper {
         for (Direction dir : UDirections.withoutCenter) {
             MapLocation point = GS.c.getLocation().add(dir);
             int elevation = GS.c.senseElevation(point);
+            RobotInfo ri = GS.c.senseRobotAtLocation(point);
             if (point.x % 2 == 0 &&
                     point.y % 2 == 0 &&
-                    GS.c.senseRobotAtLocation(point) == null &&
+                    (ri == null || ri.getTeam() != GS.c.getTeam()) &&
                     elevation < minElevation && GS.c.canDigDirt(dir)) {
                 minElevation = elevation;
                 bestDir = dir;
