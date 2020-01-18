@@ -8,7 +8,7 @@ public strictfp class LDesignSchool {
     private static int landscapersCount = 0;
 
     static void run() throws GameActionException {
-        if (landscapersCount < 3) {
+        if (landscapersCount < 16) {
             for (Direction dir : UDirections.all)
                 if (GS.tryBuild(RobotType.LANDSCAPER, dir)) {
                     landscapersCount += 1;

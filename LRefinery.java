@@ -4,6 +4,7 @@ import battlecode.common.GameActionException;
 
 public strictfp class LRefinery {
     static void run() throws GameActionException {
-        // System.out.println("Pollution: " + rc.sensePollution(rc.getLocation()));
+        UDebug.drawBuildingCarryingSoup();
+        System.out.println("Pollution: " + GS.c.sensePollution(GS.c.getLocation()));
     }
 }

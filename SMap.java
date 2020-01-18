@@ -15,8 +15,10 @@ public class SMap {
     static Map<MapLocation, RobotType> buildingsLocations;
     //    private static RobotInfo[][] robots;
     static MapLocation hqLoc;
+    static Set<MapLocation> noWayTo;
 
     static void init(RobotController rc) throws GameActionException {
+        noWayTo = new HashSet<>();
         soupLocations = new HashMap<>();
         buildingsLocations = new HashMap<>();
         mySoupMap = new byte[rc.getMapWidth()][];
@@ -60,6 +62,8 @@ public class SMap {
                         }
                         buildingsLocations.put(update.location, update.type);
                     }
+                } else if (message instanceof MLocationLocked) {
+                    noWayTo.add(((MLocationLocked) message).location);
                 }
             }
         }
@@ -98,19 +102,27 @@ public class SMap {
                     minIndex = i;
                 }
             }
-            return locations.get(minIndex);
+            if (minIndex == -1) {
+                return null;
+            } else {
+                return locations.get(minIndex);
+            }
         }
     }
 
-    static Map<MapLocation, RobotType> filterBuildingTypes(RobotType ... types) {
+    static Map<MapLocation, RobotType> filterBuildingTypes(boolean checkNoWay, RobotType... types) {
         Set<RobotType> typesSet = new HashSet<>(Arrays.asList(types));
         Map<MapLocation, RobotType> result = new HashMap<>();
-        for (Map.Entry<MapLocation, RobotType> kv: buildingsLocations.entrySet()) {
-            if (typesSet.contains(kv.getValue())) {
+        for (Map.Entry<MapLocation, RobotType> kv : buildingsLocations.entrySet()) {
+            if (typesSet.contains(kv.getValue()) && (!checkNoWay || !noWayTo.contains(kv.getKey()))) {
                 result.put(kv.getKey(), kv.getValue());
             }
         }
         return result;
+    }
+
+    static Map<MapLocation, RobotType> filterBuildingTypes(RobotType... types) {
+        return filterBuildingTypes(true, types);
     }
 
     static boolean nearbyExistsMy(RobotType type) {

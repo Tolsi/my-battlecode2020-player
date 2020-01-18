@@ -2,10 +2,7 @@ package mybot;
 
 import battlecode.common.*;
 
-import java.util.LinkedList;
 import java.util.List;
-
-import static mybot.UBlockchain.saveSoupAsByte;
 
 public strictfp class LMiner {
     static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
@@ -17,7 +14,8 @@ public strictfp class LMiner {
             // todo or min?
             if (SMap.mySoupMap[point.x][point.y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) {
                 if (GS.tryBuild(type, dir)) {
-                    System.out.println("created a design school");
+                    SMap.buildingsLocations.put(point, type);
+                    System.out.printf("created a %s", type);
                     if (UBlockchain.sendWhatIBuild(point, type)) {
                         System.out.println("write it on blockchain");
                     } else {
@@ -42,7 +40,6 @@ public strictfp class LMiner {
     static void run() throws GameActionException {
         boolean canStay = false;
 
-        List<MSoupLocation> newSoupLocations = new LinkedList<>();
         for (Direction dir : UDirections.withoutCenter) {
             if (GS.tryRefine(dir)) {
                 System.out.println("I refined soup! " + GS.c.getTeamSoup());
@@ -55,54 +52,25 @@ public strictfp class LMiner {
             }
         }
 
+        System.out.printf("%d: I'm a %s[%d] - before mark new soup - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
+
         //region Looking for new soup
-        MapLocation l = GS.c.getLocation();
-        int soupAround = 0;
-        int radius = (int) Math.sqrt(GS.c.getCurrentSensorRadiusSquared());
-        for (int x = l.x - radius; x < l.x + radius; x++) {
-            if (x >= 0 && x < GS.c.getMapWidth()) {
-                for (int y = l.y - radius; y < l.y + radius; y++) {
-                    if (y >= 0 && y < GS.c.getMapHeight()) {
-                        MapLocation point = new MapLocation(x, y);
-                        if (GS.c.canSenseLocation(point)) {
-                            int soupValue = GS.c.senseSoup(point);
-                            soupAround += soupValue;
-                            byte soupBytes = saveSoupAsByte(soupValue);
-                            if (SMap.mySoupMap[point.x][point.y] != soupBytes) {
-                                SMap.markSoup(point, soupBytes);
-                            }
-                            if (((soupBytes > UBlockchain.UNSIGNED_BYTE_MIN_VALUE && SMap.blockchainSoupMap[x][y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) ||
-                                    (soupBytes == UBlockchain.UNSIGNED_BYTE_MIN_VALUE && soupBytes != SMap.blockchainSoupMap[x][y])) &&
-                                    newSoupLocations.size() <= 8) {
-                                // todo if it's not on the "state" map say to blockchain that there're a soup
-                                newSoupLocations.add(new MSoupLocation(point, soupBytes));
-                            }
-                        }
-                    }
-                }
-//                System.out.printf("%d: I'm a %s[%d] - soup scan - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
-            }
-        }
+        UTuple2<List<MSoupLocation>, Integer> soupLocationsResult = UPatrol.markNewSoupLocationsOnTheMapAndToBlockchain();
+        List<MSoupLocation> newSoupLocations = soupLocationsResult.f;
+        int soupAround = soupLocationsResult.s;
         //endregion
 
+        System.out.printf("%d: I'm a %s[%d] - after mark new soup - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
+
         //region Write new found soup to blockchain
-        //        System.out.printf("%d: I'm a %s[%d] - after soup scan - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
-        if (newSoupLocations.size() > 0) {
-            // take only first 8 messages to not get buffer overflow
-            newSoupLocations = newSoupLocations.subList(0, Math.min(8, newSoupLocations.size()));
-            int[] txData = UBlockchain.messageToTXData(new MSoupLocations(newSoupLocations));
-            System.out.printf("Send %d new soup locations to the blockchain\n", newSoupLocations.size());
-            int fee = UBlockchain.bestFee();
-            if (fee > 0) {
-                GS.c.submitTransaction(txData, fee);
-            }
-        }
-        System.out.printf("%d: I'm a %s[%d] - after blockchain send - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
+        UPatrol.sendNewSoupLocationsToBlockchain(newSoupLocations);
         //endregion
+
+        System.out.printf("%d: I'm a %s[%d] - after blockchain send - Spent=%d\n", GS.c.getRoundNum(), GS.c.getType(), GS.c.getID(), Clock.getBytecodeNum());
 
         //region build net gun is there're no any
         GS.nearbyRobots = GS.c.senseNearbyRobots();
-        for (RobotInfo ri: GS.nearbyRobots) {
+        for (RobotInfo ri : GS.nearbyRobots) {
             if (ri.getTeam() != GS.c.getTeam() &&
                     ri.getType() == RobotType.DELIVERY_DRONE &&
                     GS.c.getTeamSoup() >= RobotType.NET_GUN.cost &&
@@ -113,12 +81,17 @@ public strictfp class LMiner {
         //endregion
 
         // todo if can get it? :D
-        if (soupAround > 1000 && GS.c.getLocation().distanceSquaredTo(SMap.hqLoc) > 200 &&
-                GS.c.getTeamSoup() >= RobotType.REFINERY.cost && !SMap.nearbyExistsMy(RobotType.REFINERY)) {
+        MapLocation closestHqOrRefinery = SMap.closestLocations(GS.c.getLocation(), SMap.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
+        if (GS.c.getTeamSoup() >= RobotType.REFINERY.cost &&
+                (soupAround > 0 && closestHqOrRefinery == null && GS.c.getSoupCarrying() == RobotType.MINER.soupLimit) ||
+                (soupAround > 1000 && closestHqOrRefinery != null && GS.c.getLocation().distanceSquaredTo(closestHqOrRefinery) > 200 &&
+                !SMap.nearbyExistsMy(RobotType.REFINERY)) ||
+                (soupAround > 0 && SMap.filterBuildingTypes(RobotType.REFINERY).size() == 0 && closestHqOrRefinery != null && GS.c.getLocation().distanceSquaredTo(closestHqOrRefinery) > 100)) {
             findPlaceAndBuild(RobotType.REFINERY);
         }
 
         if (GS.c.getTeamSoup() >= RobotType.DESIGN_SCHOOL.cost &&
+                SMap.filterBuildingTypes(RobotType.REFINERY).size() > 0 &&
                 SMap.filterBuildingTypes(RobotType.DESIGN_SCHOOL).size() == 0 &&
                 Math.random() < 0.1) {
 //        GS.nearbyRobots = GS.c.senseNearbyRobots();
@@ -130,9 +103,9 @@ public strictfp class LMiner {
             MapLocation returnTo = SMap.closestLocations(GS.c.getLocation(), SMap.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
             if (GS.c.getSoupCarrying() == RobotType.MINER.soupLimit && returnTo != null) {
                 // time to go back to the HQ or refinery
-                if (GS.goTo(GS.c.getLocation().directionTo(SMap.hqLoc))) {
-                    GS.c.setIndicatorLine(GS.c.getLocation(), SMap.hqLoc, 255, 255, 0);
-                    System.out.println("moved towards HQ");
+                if (GS.goTo(GS.c.getLocation().directionTo(returnTo))) {
+                    GS.c.setIndicatorLine(GS.c.getLocation(), returnTo, 255, 255, 0);
+                    System.out.println("moved towards closest REFINERY or HQ");
                 }
             } else {
                 MapLocation closestSoupLocation = SMap.closestLocations(GS.c.getLocation(), SMap.soupLocations);

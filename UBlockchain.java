@@ -15,8 +15,9 @@ public class UBlockchain {
     static byte checksum(byte[] bytes) {
         int checksum = 19283 + teamByte;
         for (int i = 0; i < CRC_BYTE; i++) {
-            checksum += bytes[i] * (i - 82);
+            checksum += bytes[i];
         }
+        checksum *= 53;
         return (byte) ((checksum % 255) - 128);
     }
 
@@ -35,6 +36,8 @@ public class UBlockchain {
             MSoupLocations.write((MSoupLocations) message, bytes, 0);
         } else if (message instanceof MMapUpdates) {
             MMapUpdates.write((MMapUpdates) message, bytes, 0);
+        } else if (message instanceof MLocationLocked) {
+            MLocationLocked.write((MLocationLocked) message, bytes, 0);
         }
     }
 
@@ -44,8 +47,8 @@ public class UBlockchain {
                 return MSoupLocations.read(bytes, 0);
             case 1:
                 return MMapUpdates.read(bytes, 0);
-//            case 1:
-//                break;
+            case 2:
+                return MLocationLocked.read(bytes, 0);
             default:
                 return null;
         }
