@@ -84,9 +84,8 @@ public strictfp class LMiner {
         MapLocation closestHqOrRefinery = SMap.closestLocations(GS.c.getLocation(), SMap.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
         if (GS.c.getTeamSoup() >= RobotType.REFINERY.cost &&
                 (soupAround > 0 && closestHqOrRefinery == null && GS.c.getSoupCarrying() == RobotType.MINER.soupLimit) ||
-                (soupAround > 1000 && closestHqOrRefinery != null && GS.c.getLocation().distanceSquaredTo(closestHqOrRefinery) > 200 &&
-                !SMap.nearbyExistsMy(RobotType.REFINERY)) ||
-                (soupAround > 0 && SMap.filterBuildingTypes(RobotType.REFINERY).size() == 0 && closestHqOrRefinery != null && GS.c.getLocation().distanceSquaredTo(closestHqOrRefinery) > 100)) {
+                (soupAround > 1000 && closestHqOrRefinery != null && (int) Math.sqrt(GS.c.getLocation().distanceSquaredTo(closestHqOrRefinery)) > Math.min(GS.c.getMapHeight(), GS.c.getMapWidth()) / 3) ||
+                (soupAround > 0 && closestHqOrRefinery != null && SMap.filterBuildingTypes(RobotType.REFINERY).size() == 0 && GS.c.getLocation().distanceSquaredTo(closestHqOrRefinery) > 100)) {
             findPlaceAndBuild(RobotType.REFINERY);
         }
 
@@ -102,6 +101,9 @@ public strictfp class LMiner {
         //region Make action
         if (!canStay) {
             MapLocation returnTo = SMap.closestLocations(GS.c.getLocation(), SMap.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
+            if (returnTo == null) {
+                System.out.println("OMFG where to go?!");
+            }
             if (GS.c.getSoupCarrying() == RobotType.MINER.soupLimit && returnTo != null) {
                 // time to go back to the HQ or refinery
                 if (GS.goTo(GS.c.getLocation().directionTo(returnTo))) {

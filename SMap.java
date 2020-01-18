@@ -114,7 +114,7 @@ public class SMap {
         Set<RobotType> typesSet = new HashSet<>(Arrays.asList(types));
         Map<MapLocation, RobotType> result = new HashMap<>();
         for (Map.Entry<MapLocation, RobotType> kv : buildingsLocations.entrySet()) {
-            if (typesSet.contains(kv.getValue()) && (!checkNoWay || !noWayTo.contains(kv.getKey()))) {
+            if (typesSet.contains(kv.getValue()) && !(checkNoWay && noWayTo.contains(kv.getKey()))) {
                 result.put(kv.getKey(), kv.getValue());
             }
         }
