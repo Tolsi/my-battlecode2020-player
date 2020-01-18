@@ -141,7 +141,7 @@ public class UBlockchain {
 
     static boolean sent = false;
     static boolean sendWhatICreated() throws GameActionException {
-        if (!SMap.buildingsLocations.containsKey(GS.c.getLocation()) && !sent) {
+        if (!SState.buildingsLocations.containsKey(GS.c.getLocation()) && !sent) {
             Map<Team, List<MMapUpdate>> adds = new HashMap<>();
             adds.put(GS.c.getTeam(), Collections.singletonList(new MMapUpdate(GS.c.getLocation(), GS.c.getType())));
             int[] txData = UBlockchain.messageToTXData(new MMapUpdates((byte) 0, adds, Collections.emptyMap()));
@@ -156,7 +156,7 @@ public class UBlockchain {
     }
 
     static boolean sendWhatIBuild(MapLocation l, RobotType t) throws GameActionException {
-        if (!SMap.buildingsLocations.containsKey(GS.c.getLocation())) {
+        if (!SState.buildingsLocations.containsKey(GS.c.getLocation())) {
             Map<Team, List<MMapUpdate>> adds = new HashMap<>();
             adds.put(GS.c.getTeam(), Collections.singletonList(new MMapUpdate(l, t)));
             int[] txData = UBlockchain.messageToTXData(new MMapUpdates((byte) 0, adds, Collections.emptyMap()));

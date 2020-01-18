@@ -9,8 +9,8 @@ public strictfp class LHQ {
     private static int minersCount = 0;
     private static boolean locked;
     static void run() throws GameActionException {
-        if (SMap.hqLoc == null) {
-            SMap.hqLoc = GS.c.getLocation();
+        if (SState.hqLoc == null) {
+            SState.hqLoc = GS.c.getLocation();
         }
 
         if (UBlockchain.sendWhatICreated()) {
@@ -21,7 +21,7 @@ public strictfp class LHQ {
         if (!locked) {
             int distance2LevelMax = Integer.MIN_VALUE;
             for (Direction dir : UDirections.withoutCenter) {
-                MapLocation tileToCheck = SMap.hqLoc.add(dir).add(dir);
+                MapLocation tileToCheck = SState.hqLoc.add(dir).add(dir);
                 if (GS.c.canSenseLocation(tileToCheck) && GS.c.senseElevation(tileToCheck) > distance2LevelMax) {
                     distance2LevelMax = GS.c.senseElevation(tileToCheck);
                 }
@@ -30,7 +30,7 @@ public strictfp class LHQ {
             // todo смотреть реально всё в радиусе 2 клеток
             boolean allAreLocked = true;
             for (Direction dir : UDirections.withoutCenter) {
-                MapLocation tileToCheck = SMap.hqLoc.add(dir);
+                MapLocation tileToCheck = SState.hqLoc.add(dir);
                 if (allAreLocked && GS.c.canSenseLocation(tileToCheck) && Math.abs(GS.c.senseElevation(tileToCheck) - distance2LevelMax) <= 3) {
                     allAreLocked = false;
                 }
@@ -47,7 +47,7 @@ public strictfp class LHQ {
 
             // todo if there're a lot of soup, more than team target to build
             // todo optimize this parameters?!
-            if (minersCount < 6 || SMap.buildingsLocations.size() > 2 && GS.c.getTeamSoup() > 200) {
+            if (minersCount < 6 || SState.buildingsLocations.size() > 2 && GS.c.getTeamSoup() > 200) {
                 for (Direction dir : UDirections.all) {
                     if (GS.tryBuild(RobotType.MINER, dir)) {
                         minersCount += 1;

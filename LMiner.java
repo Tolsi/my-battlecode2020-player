@@ -2,19 +2,23 @@ package mybot;
 
 import battlecode.common.*;
 
-import java.util.List;
+import java.util.*;
 
 public strictfp class LMiner {
     static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
             RobotType.FULFILLMENT_CENTER, RobotType.NET_GUN};
 
     static boolean findPlaceAndBuild(RobotType type) throws GameActionException {
+        return findPlaceAndBuild(type, null);
+    }
+
+    static boolean findPlaceAndBuild(RobotType type, Set<Integer> equalsRangeToHQ) throws GameActionException {
         for (Direction dir : UDirections.withoutCenter) {
             MapLocation point = GS.c.getLocation().add(dir);
             // todo or min?
-            if (SMap.mySoupMap[point.x][point.y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) {
+            if (SState.mySoupMap[point.x][point.y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE && (equalsRangeToHQ == null || (SState.hqLoc != null && equalsRangeToHQ.contains(point.distanceSquaredTo(SState.hqLoc))))) {
                 if (GS.tryBuild(type, dir)) {
-                    SMap.buildingsLocations.put(point, type);
+                    SState.buildingsLocations.put(point, type);
                     System.out.printf("created a %s", type);
                     if (UBlockchain.sendWhatIBuild(point, type)) {
                         System.out.println("write it on blockchain");
@@ -74,33 +78,33 @@ public strictfp class LMiner {
             if (ri.getTeam() != GS.c.getTeam() &&
                     ri.getType() == RobotType.DELIVERY_DRONE &&
                     GS.c.getTeamSoup() >= RobotType.NET_GUN.cost &&
-                    !SMap.nearbyExistsMy(RobotType.NET_GUN)) {
+                    !SState.nearbyExistsMy(RobotType.NET_GUN)) {
                 findPlaceAndBuild(RobotType.NET_GUN);
             }
         }
         //endregion
 
         // todo if can get it? :D
-        MapLocation closestHqOrRefinery = SMap.closestLocations(GS.c.getLocation(), SMap.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
+        MapLocation closestHqOrRefinery = SState.closestLocations(GS.c.getLocation(), SState.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
         if (GS.c.getTeamSoup() >= RobotType.REFINERY.cost &&
                 (soupAround > 0 && closestHqOrRefinery == null && GS.c.getSoupCarrying() == RobotType.MINER.soupLimit) ||
                 (soupAround > 1000 && closestHqOrRefinery != null && (int) Math.sqrt(GS.c.getLocation().distanceSquaredTo(closestHqOrRefinery)) > Math.min(GS.c.getMapHeight(), GS.c.getMapWidth()) / 3) ||
-                (soupAround > 0 && closestHqOrRefinery != null && SMap.filterBuildingTypes(RobotType.REFINERY).size() == 0 && GS.c.getLocation().distanceSquaredTo(closestHqOrRefinery) > 100)) {
+                (soupAround > 0 && closestHqOrRefinery != null && SState.filterBuildingTypes(RobotType.REFINERY).size() == 0 && GS.c.getLocation().distanceSquaredTo(closestHqOrRefinery) > 100)) {
             findPlaceAndBuild(RobotType.REFINERY);
         }
 
         if (GS.c.getTeamSoup() >= RobotType.DESIGN_SCHOOL.cost &&
-                (SMap.filterBuildingTypes(RobotType.REFINERY).size() > 0 ||
+                (SState.filterBuildingTypes(RobotType.REFINERY).size() > 0 ||
                         GS.c.getTeamSoup() > 500 && GS.c.getRoundNum() > 150) &&
-                SMap.filterBuildingTypes(RobotType.DESIGN_SCHOOL).size() == 0 &&
+                SState.filterBuildingTypes(RobotType.DESIGN_SCHOOL).size() == 0 &&
                 Math.random() < 0.1) {
 //        GS.nearbyRobots = GS.c.senseNearbyRobots();
-            findPlaceAndBuild(RobotType.DESIGN_SCHOOL);
+            findPlaceAndBuild(RobotType.DESIGN_SCHOOL, new HashSet<>(Collections.singleton(4)));
         }
 
         //region Make action
         if (!canStay) {
-            MapLocation returnTo = SMap.closestLocations(GS.c.getLocation(), SMap.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
+            MapLocation returnTo = SState.closestLocations(GS.c.getLocation(), SState.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
             if (returnTo == null) {
                 System.out.println("OMFG where to go?!");
             }
@@ -111,7 +115,7 @@ public strictfp class LMiner {
                     System.out.println("moved towards closest REFINERY or HQ");
                 }
             } else {
-                MapLocation closestSoupLocation = SMap.closestLocations(GS.c.getLocation(), SMap.soupLocations);
+                MapLocation closestSoupLocation = SState.closestLocations(GS.c.getLocation(), SState.soupLocations);
                 if (closestSoupLocation != null) {
                     // todo call to landscaper to break the wall
                     if (GS.goTo(GS.c.getLocation().directionTo(closestSoupLocation))) {

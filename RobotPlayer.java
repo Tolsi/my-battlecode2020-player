@@ -19,7 +19,7 @@ public strictfp class RobotPlayer {
         GS.c = rc;
         GS.lifespan = 0;
         UBlockchain.teamByte = (byte) rc.getTeam().ordinal();
-        SMap.init(rc);
+        SState.init(rc);
 
         System.out.printf("%d: I'm a %s[%d] and I just got created!\n", rc.getRoundNum(), rc.getType(), rc.getID());
         while (true) {
@@ -31,7 +31,7 @@ public strictfp class RobotPlayer {
                 System.out.printf("%d: I'm a %s[%d] at %s - STARTED - Spent=%d \n", rc.getRoundNum(), rc.getType(), rc.getID(), rc.getLocation(), Clock.getBytecodeNum());
                 if (rc.getRoundNum() > 1) {
                     for (int i = lastSeenBlockUntil; i < rc.getRoundNum(); i++) {
-                        SMap.update(rc, i);
+                        SState.update(rc, i);
                         lastSeenBlockUntil = rc.getRoundNum();
                     }
                 }

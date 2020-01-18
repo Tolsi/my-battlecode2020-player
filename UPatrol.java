@@ -1,6 +1,5 @@
 package mybot;
 
-import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 
@@ -24,11 +23,11 @@ public class UPatrol {
                             int soupValue = GS.c.senseSoup(point);
                             soupAround += soupValue;
                             byte soupBytes = saveSoupAsByte(soupValue);
-                            if (SMap.mySoupMap[point.x][point.y] != soupBytes) {
-                                SMap.markSoup(point, soupBytes);
+                            if (SState.mySoupMap[point.x][point.y] != soupBytes) {
+                                SState.markSoup(point, soupBytes);
                             }
-                            if (((soupBytes > UBlockchain.UNSIGNED_BYTE_MIN_VALUE && SMap.blockchainSoupMap[x][y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) ||
-                                    (soupBytes == UBlockchain.UNSIGNED_BYTE_MIN_VALUE && soupBytes != SMap.blockchainSoupMap[x][y])) &&
+                            if (((soupBytes > UBlockchain.UNSIGNED_BYTE_MIN_VALUE && SState.blockchainSoupMap[x][y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) ||
+                                    (soupBytes == UBlockchain.UNSIGNED_BYTE_MIN_VALUE && soupBytes != SState.blockchainSoupMap[x][y])) &&
                                     newSoupLocations.size() <= 8) {
                                 // todo if it's not on the "state" map say to blockchain that there're a soup
                                 newSoupLocations.add(new MSoupLocation(point, soupBytes));

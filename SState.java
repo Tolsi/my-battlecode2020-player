@@ -4,7 +4,7 @@ import battlecode.common.*;
 
 import java.util.*;
 
-public class SMap {
+public class SState {
     /**
      * soup is divided to 10 here
      */

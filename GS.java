@@ -5,7 +5,7 @@ import battlecode.common.*;
 public strictfp class GS {
     static RobotController c;
     static int lifespan;
-    static SMap map;
+    static SState map;
     static RobotInfo[] nearbyRobots = null;
 
     static boolean tryMove() throws GameActionException {
