@@ -11,13 +11,14 @@ public class UBlockchain {
     //region CRC
     static byte CRC_BYTE = 27;
     static byte teamByte = 0;
+    static byte random = (byte) (128 * Math.random());
 
     static byte checksum(byte[] bytes) {
         int checksum = 19283 + teamByte;
         for (int i = 0; i < CRC_BYTE; i++) {
-            checksum += bytes[i];
+            checksum += bytes[i] * i;
         }
-        checksum *= 53;
+        checksum *= random;
         return (byte) ((checksum % 255) - 128);
     }
 
