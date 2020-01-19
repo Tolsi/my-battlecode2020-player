@@ -2,7 +2,8 @@ package mybot;
 
 import battlecode.common.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 public strictfp class LMiner {
     static RobotType[] spawnedByMiner = {RobotType.REFINERY, RobotType.VAPORATOR, RobotType.DESIGN_SCHOOL,
@@ -15,8 +16,28 @@ public strictfp class LMiner {
     static boolean findPlaceAndBuild(RobotType type, Set<Integer> equalsRangeToHQ) throws GameActionException {
         for (Direction dir : UDirections.withoutCenter) {
             MapLocation point = GS.c.getLocation().add(dir);
-            // todo or min?
-            if (SState.mySoupMap[point.x][point.y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE && (equalsRangeToHQ == null || (SState.hqLoc != null && equalsRangeToHQ.contains(point.distanceSquaredTo(SState.hqLoc))))) {
+            // todo find hight place
+            if (SState.mySoupMap[point.x][point.y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE &&
+                    (equalsRangeToHQ == null || (SState.hqLoc != null && equalsRangeToHQ.contains(point.distanceSquaredTo(SState.hqLoc))))) {
+                if (GS.tryBuild(type, dir)) {
+                    SState.buildingsLocations.put(point, type);
+                    System.out.printf("created a %s", type);
+                    if (UBlockchain.sendWhatIBuild(point, type)) {
+                        System.out.println("write it on blockchain");
+                    } else {
+                        System.out.println("can't write it on blockchain");
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    static boolean findPlaceAndBuildFarMoreThat(RobotType type, int moreRangeToHQ) throws GameActionException {
+        for (Direction dir : UDirections.withoutCenter) {
+            MapLocation point = GS.c.getLocation().add(dir);
+            if (SState.mySoupMap[point.x][point.y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE && (SState.hqLoc != null && point.distanceSquaredTo(SState.hqLoc) > moreRangeToHQ)) {
                 if (GS.tryBuild(type, dir)) {
                     SState.buildingsLocations.put(point, type);
                     System.out.printf("created a %s", type);
@@ -87,19 +108,33 @@ public strictfp class LMiner {
         // todo if can get it? :D
         MapLocation closestHqOrRefinery = SState.closestLocations(GS.c.getLocation(), SState.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
         if (GS.c.getTeamSoup() >= RobotType.REFINERY.cost &&
-                (soupAround > 0 && closestHqOrRefinery == null && GS.c.getSoupCarrying() == RobotType.MINER.soupLimit) ||
+                (soupAround > 0 && closestHqOrRefinery == null && SState.filterBuildingTypes(RobotType.DESIGN_SCHOOL).size() > 0) ||
                 (soupAround > 1000 && closestHqOrRefinery != null && (int) Math.sqrt(GS.c.getLocation().distanceSquaredTo(closestHqOrRefinery)) > Math.min(GS.c.getMapHeight(), GS.c.getMapWidth()) / 3) ||
-                (soupAround > 0 && closestHqOrRefinery != null && SState.filterBuildingTypes(RobotType.REFINERY).size() == 0 && GS.c.getLocation().distanceSquaredTo(closestHqOrRefinery) > 100)) {
-            findPlaceAndBuild(RobotType.REFINERY);
+                (closestHqOrRefinery != null && SState.filterBuildingTypes(RobotType.REFINERY).size() == 0 && !SState.nearbyExistsMy(RobotType.REFINERY) && Math.random() < 0.05)) {
+            findPlaceAndBuildFarMoreThat(RobotType.REFINERY, 64);
         }
 
         if (GS.c.getTeamSoup() >= RobotType.DESIGN_SCHOOL.cost &&
                 (SState.filterBuildingTypes(RobotType.REFINERY).size() > 0 ||
-                        GS.c.getTeamSoup() > 500 && GS.c.getRoundNum() > 150) &&
+                        GS.c.getTeamSoup() >= (RobotType.DESIGN_SCHOOL.cost + RobotType.REFINERY.cost)) &&
                 SState.filterBuildingTypes(RobotType.DESIGN_SCHOOL).size() == 0 &&
                 Math.random() < 0.1) {
-//        GS.nearbyRobots = GS.c.senseNearbyRobots();
-            findPlaceAndBuild(RobotType.DESIGN_SCHOOL, new HashSet<>(Collections.singleton(4)));
+            findPlaceAndBuildFarMoreThat(RobotType.DESIGN_SCHOOL, 8);
+        }
+
+        // todo поиск пути по высотам, которые знаешь
+        // todo строить на самой высокой точке, на которую знаешь знаешь как пройти
+        // todo делиться самой высокой точкой, до которой знаешь, как дойти? строит кто знает самую высокую
+        // todo строить частичную матрицу смежности? откуда куда можно, а куда нельзя?
+        // todo двигаться напрямую для летатетей, но облетать вышки (отмечать их на блокчейне) с помощью полей потенциалов
+        // todo a star при маленьком расстоянии до точки? и лимит в количестве шагов?
+        // todo сжатие карты как изображения без потери качества для передачи?
+        if (GS.c.getTeamSoup() >= RobotType.FULFILLMENT_CENTER.cost &&
+                (SState.filterBuildingTypes(RobotType.REFINERY).size() > 0 &&
+                        SState.filterBuildingTypes(RobotType.DESIGN_SCHOOL).size() > 0) &&
+                SState.filterBuildingTypes(RobotType.FULFILLMENT_CENTER).size() == 0 &&
+                Math.random() < 0.1) {
+            findPlaceAndBuildFarMoreThat(RobotType.FULFILLMENT_CENTER, 8);
         }
 
         //region Make action
@@ -127,9 +162,15 @@ public strictfp class LMiner {
                             System.out.println("I moved randomly!");
                         }
                     }
-                } else if (GS.tryMove(UDirections.randomDirection())) { // todo research location here
-                    // otherwise, move randomly as usual
-                    System.out.println("I moved randomly!");
+                } else if (SState.hqLoc != null && GS.c.getLocation().distanceSquaredTo(SState.hqLoc) < 4) {
+                    if (GS.tryMove(UDirections.randomDirection())) { // todo research location here
+                        // otherwise, move randomly as usual
+                        System.out.println("I moved randomly!");
+                    }
+                } else {
+                    if (GS.goOut(GS.c.getLocation().directionTo(SState.hqLoc))) {
+                        System.out.println("I moved out of HQ!");
+                    }
                 }
             }
         }

@@ -24,6 +24,7 @@ public strictfp class RobotPlayer {
         System.out.printf("%d: I'm a %s[%d] and I just got created!\n", rc.getRoundNum(), rc.getType(), rc.getID());
         while (true) {
             GS.lifespan += 1;
+            GS.waterLevel = LUtils.getWaterLevel(GS.c.getRoundNum());
             // Try/catch blocks stop unhandled exceptions, which cause your robot to explode
             try {
                 // Here, we've separated the controls into a different method for each RobotType.

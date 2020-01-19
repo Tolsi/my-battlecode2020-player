@@ -45,23 +45,12 @@ public class AAPFUtility {
      * @return an array of int[2] indicating the coordinates of the path.
      */
     public static int[][] generatePath(AAPFGridGraph gridGraph,
-                                       int sx, int sy, int ex, int ey) {
-        AAPFPathFindingAlgorithm algo = new AAPFAStarStaticMemory(gridGraph, sx, sy, ex, ey);
+                                       int sx, int sy, int ex, int ey, int maxDistance) {
+        AAPFPathFindingAlgorithm algo = new AAPFAStarStaticMemory(gridGraph, sx, sy, ex, ey, maxDistance);
         algo.computePath();
         
         int[][] path = algo.getPath();
         return path;
-    }
-    
-    public static boolean isPathTaut(AAPFGridGraph gridGraph, int[][] path) {
-        int v1 = 0;
-        int v2 = 1;
-        for (int v3=2; v3<path.length; ++v3) {
-            if (!gridGraph.isTaut(path[v1][0], path[v1][1], path[v2][0], path[v2][1], path[v3][0], path[v3][1])) return false;
-            ++v1;
-            ++v2;
-        }
-        return true;
     }
 
     public static boolean isOptimal(double length, double optimalLength) {

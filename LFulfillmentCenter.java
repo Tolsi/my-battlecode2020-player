@@ -9,7 +9,8 @@ public strictfp class LFulfillmentCenter {
         if (UBlockchain.sendWhatICreated()) {
             System.out.println("Write to blockchain that I was created");
         }
-        for (Direction dir : UDirections.all)
+        for (Direction dir : UDirections.all) {
             GS.tryBuild(RobotType.DELIVERY_DRONE, dir);
+        }
     }
 }

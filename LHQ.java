@@ -58,7 +58,7 @@ public strictfp class LHQ {
 
             // todo if there're a lot of soup, more than team target to build
             // todo optimize this parameters?!
-            if (minersCount < 6 || SState.buildingsLocations.size() > 2 && GS.c.getTeamSoup() > 200) {
+            if (minersCount < 3 || (SState.soupLocations.size() > 10 && GS.c.getTeamSoup() > 300)) {
                 for (Direction dir : UDirections.all) {
                     if (GS.tryBuild(RobotType.MINER, dir)) {
                         minersCount += 1;

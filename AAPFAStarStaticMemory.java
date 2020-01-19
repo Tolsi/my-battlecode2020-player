@@ -8,9 +8,11 @@ public class AAPFAStarStaticMemory extends AAPFPathFindingAlgorithm {
     protected AAPFReusableIndirectHeap pq;
 
     protected int finish;
+    protected int maxDistance;
 
-    public AAPFAStarStaticMemory(AAPFGridGraph graph, int sx, int sy, int ex, int ey) {
+    public AAPFAStarStaticMemory(AAPFGridGraph graph, int sx, int sy, int ex, int ey, int maxDistance) {
         super(graph, graph.sizeX, graph.sizeY, sx, sy, ex, ey);
+        this.maxDistance = maxDistance;
     }
 
     @Override
@@ -33,7 +35,7 @@ public class AAPFAStarStaticMemory extends AAPFPathFindingAlgorithm {
 
             if (Math.abs(dist - lastDist) > 0.01f) { lastDist = dist;}
 
-            if (current == finish || distance(current) == Integer.MAX_VALUE) {
+            if (current == finish || distance(current) == Integer.MAX_VALUE || distance(current) > maxDistance) {
                 //maybeSaveSearchSnapshot();
                 break;
             }
@@ -42,15 +44,15 @@ public class AAPFAStarStaticMemory extends AAPFPathFindingAlgorithm {
             int x = toTwoDimX(current);
             int y = toTwoDimY(current);
 
-            tryRelaxNeighbour(current, x, y, x-1, y-1);
-            tryRelaxNeighbour(current, x, y, x, y-1);
-            tryRelaxNeighbour(current, x, y, x+1, y-1);
-
             tryRelaxNeighbour(current, x, y, x-1, y);
-            tryRelaxNeighbour(current, x, y, x+1, y);
-
+            tryRelaxNeighbour(current, x, y, x-1, y-1);
             tryRelaxNeighbour(current, x, y, x-1, y+1);
+
+            tryRelaxNeighbour(current, x, y, x, y-1);
             tryRelaxNeighbour(current, x, y, x, y+1);
+
+            tryRelaxNeighbour(current, x, y, x+1, y);
+            tryRelaxNeighbour(current, x, y, x+1, y-1);
             tryRelaxNeighbour(current, x, y, x+1, y+1);
 
             //maybeSaveSearchSnapshot();
@@ -81,7 +83,7 @@ public class AAPFAStarStaticMemory extends AAPFPathFindingAlgorithm {
 
     protected int weight(int x1, int y1, int x2, int y2) {
         // todo pass function??
-        return graph.distance(x1, y1, x2, y2);
+        return 1;
     }
 
     protected boolean relax(int u, int v, int weightUV) {

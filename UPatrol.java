@@ -21,9 +21,10 @@ public class UPatrol {
                         MapLocation point = new MapLocation(x, y);
                         if (GS.c.canSenseLocation(point)) {
                             int soupValue = GS.c.senseSoup(point);
+                            SState.myDepthMap[x][y] = GS.c.senseElevation(point);
                             soupAround += soupValue;
                             byte soupBytes = saveSoupAsByte(soupValue);
-                            if (SState.mySoupMap[point.x][point.y] != soupBytes) {
+                            if (SState.mySoupMap[x][y] != soupBytes) {
                                 SState.markSoup(point, soupBytes);
                             }
                             if (((soupBytes > UBlockchain.UNSIGNED_BYTE_MIN_VALUE && SState.blockchainSoupMap[x][y] == UBlockchain.UNSIGNED_BYTE_MIN_VALUE) ||
@@ -39,6 +40,24 @@ public class UPatrol {
         }
         return new UTuple2<>(newSoupLocations, soupAround);
     }
+
+    static void updateDepthOnTheMap() throws GameActionException {
+        MapLocation l = GS.c.getLocation();
+        int radius = (int) Math.sqrt(GS.c.getCurrentSensorRadiusSquared());
+        for (int x = l.x - radius; x < l.x + radius; x++) {
+            if (x >= 0 && x < GS.c.getMapWidth()) {
+                for (int y = l.y - radius; y < l.y + radius; y++) {
+                    if (y >= 0 && y < GS.c.getMapHeight()) {
+                        MapLocation point = new MapLocation(x, y);
+                        if (GS.c.canSenseLocation(point)) {
+                            SState.myDepthMap[x][y] = GS.c.senseElevation(point);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 
     static void sendNewSoupLocationsToBlockchain(List<MSoupLocation> newSoupLocations) throws GameActionException {
         System.out.printf("Send %d new soup locations to the blockchain\n", newSoupLocations.size());

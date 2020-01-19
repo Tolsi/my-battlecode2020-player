@@ -5,6 +5,7 @@ import battlecode.common.*;
 public strictfp class GS {
     static RobotController c;
     static int lifespan;
+    static double waterLevel;
     static SState map;
     static RobotInfo[] nearbyRobots = null;
 

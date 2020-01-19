@@ -10,6 +10,7 @@ public class SState {
      */
     static byte[][] mySoupMap;
     static byte[][] blockchainSoupMap;
+    static int[][] myDepthMap;
 
     static Map<MapLocation, Byte> soupLocations;
     static Map<MapLocation, RobotType> buildingsLocations;
@@ -33,6 +34,13 @@ public class SState {
             blockchainSoupMap[i] = new byte[rc.getMapHeight()];
             for (byte j = 0; j < rc.getMapHeight(); j++) {
                 blockchainSoupMap[i][j] = UBlockchain.UNSIGNED_BYTE_MIN_VALUE;
+            }
+        }
+        myDepthMap = new int[rc.getMapWidth()][];
+        for (byte i = 0; i < rc.getMapWidth(); i++) {
+            myDepthMap[i] = new int[rc.getMapHeight()];
+            for (byte j = 0; j < rc.getMapHeight(); j++) {
+                myDepthMap[i][j] = Integer.MIN_VALUE;
             }
         }
         for (int i = 1; i <= rc.getRoundNum() - 1; i++) {
