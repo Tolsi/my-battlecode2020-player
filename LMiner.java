@@ -102,9 +102,14 @@ public strictfp class LMiner {
                     !SState.nearbyExistsMy(RobotType.NET_GUN)) {
                 findPlaceAndBuild(RobotType.NET_GUN);
             }
+
+            if (SState.hqLoc == null && ri.getType() == RobotType.HQ && ri.getTeam() == GS.c.getTeam() ) {
+                SState.hqLoc = ri.location;
+            }
         }
         //endregion
 
+        // todo окапывать два забора вокруг для копателей
         // todo if can get it? :D
         MapLocation closestHqOrRefinery = SState.closestLocations(GS.c.getLocation(), SState.filterBuildingTypes(RobotType.HQ, RobotType.REFINERY));
         if (GS.c.getTeamSoup() >= RobotType.REFINERY.cost &&

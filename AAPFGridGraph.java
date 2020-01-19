@@ -2,6 +2,7 @@ package mybot;
 
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
+import battlecode.common.RobotType;
 
 /**
  * Represents the Grid of blocked/unblocked tiles.
@@ -49,11 +50,16 @@ public class AAPFGridGraph {
         MapLocation to = new MapLocation(x, y);
         try {
             // учесть уровень воды через N ходов?
+            if (GS.c.getType() != RobotType.DELIVERY_DRONE) {
             return Math.abs(tiles[x][y] - tiles[fromx][fromy]) > 3 ||
                     (GS.c.canSenseLocation(to) && (GS.c.senseFlooding(to) || GS.c.senseRobotAtLocation(to) != null && GS.c.senseRobotAtLocation(to).getID() != GS.c.getID())) ||
                     (!GS.c.canSenseLocation(to) && tiles[x][y] != Integer.MIN_VALUE && tiles[x][y] < GS.waterLevel) ||
                     (GS.c.canSenseLocation(from) && (GS.c.senseFlooding(from) || GS.c.senseRobotAtLocation(from) != null && GS.c.senseRobotAtLocation(from).getID() != GS.c.getID())) ||
                     (!GS.c.canSenseLocation(from) && tiles[fromx][fromy] != Integer.MIN_VALUE && tiles[fromx][fromy] < GS.waterLevel);
+            } else {
+                return (GS.c.canSenseLocation(to) && GS.c.senseRobotAtLocation(to) != null && GS.c.senseRobotAtLocation(to).getID() != GS.c.getID()) ||
+                        (GS.c.canSenseLocation(from) && GS.c.senseRobotAtLocation(from) != null && GS.c.senseRobotAtLocation(from).getID() != GS.c.getID());
+            }
         } catch (GameActionException e) {
             e.printStackTrace();
             return true;

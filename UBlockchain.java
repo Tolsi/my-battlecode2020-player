@@ -38,6 +38,8 @@ public class UBlockchain {
             MMapUpdates.write((MMapUpdates) message, bytes, 0);
         } else if (message instanceof MLocationLocked) {
             MLocationLocked.write((MLocationLocked) message, bytes, 0);
+        } else if (message instanceof MUpdateSettings) {
+            MUpdateSettings.write((MUpdateSettings) message, bytes, 0);
         }
     }
 
@@ -49,6 +51,8 @@ public class UBlockchain {
                 return MMapUpdates.read(bytes, 0);
             case 2:
                 return MLocationLocked.read(bytes, 0);
+            case 3:
+                return MUpdateSettings.read(bytes, 0);
             default:
                 return null;
         }

@@ -6,20 +6,18 @@ import battlecode.common.RobotInfo;
 import battlecode.common.Team;
 
 public strictfp class LDeliveryDrone {
-    static void run() throws GameActionException {
-        Team enemy = GS.c.getTeam().opponent();
-        if (!GS.c.isCurrentlyHoldingUnit()) {
-            // See if there are any enemy robots within striking range (distance 1 from lumberjack's radius)
-            RobotInfo[] robots = GS.c.senseNearbyRobots(GameConstants.DELIVERY_DRONE_PICKUP_RADIUS_SQUARED, enemy);
+    private static LTask currentTask = null;
 
-            if (robots.length > 0) {
-                // Pick up a first robot within range
-                GS.c.pickUpUnit(robots[0].getID());
-                System.out.println("I picked up " + robots[0].getID() + "!");
+    static void run() throws GameActionException {
+        if (currentTask == null) {
+            currentTask = new LDeliveryDroneMoveLandscapersToHQWallTask();
+        }
+        if (currentTask.isFinished()) {
+            if (currentTask instanceof LDeliveryDroneMoveLandscapersToHQWallTask) {
+                currentTask = new LDeliveryDroneRandomAttackUnits();
             }
         } else {
-            // No close robots, so search for robots within sight radius
-            GS.tryMove(UDirections.randomDirection());
+            currentTask.step();
         }
     }
 }
